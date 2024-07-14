@@ -4,6 +4,8 @@ from datetime import datetime
 from ctrl.handler import handle
 from base.request import Command,Request
 from base.mission import Mission
+from database.db_handler import connect_db, close_db, init_db
+
 
 class TaskManagerApp:
     def __init__(self, root):
@@ -82,7 +84,7 @@ class TaskManagerApp:
 
         oneMission = Mission(1,task_name,task_conTime,type=task_type)
         req = Request(req_type=Command.CREATE,uid=-1,mission=oneMission)
-        handle((req))
+        #handle((req))
 
 
         task_status = '未开始'
@@ -123,7 +125,10 @@ class TaskManagerApp:
             self.task_listbox.insert(END, task_str)
             self.task_listbox.itemconfig(index, bg=status_color)
 
-if __name__ == "__main__":
+def openSequenceDiagram():
     root = tk.Tk()
+    init_db()
     app = TaskManagerApp(root)
     root.mainloop()
+
+openSequenceDiagram()
