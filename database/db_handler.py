@@ -5,13 +5,39 @@ from datetime import datetime
 from base.mission import Mission
 
 
+def init_db():
+    # 连接到SQLite数据库
+    conn = sqlite3.connect('todo.db')
+    c = conn.cursor()
+
+    # 创建用户表
+    c.execute('''CREATE TABLE IF NOT EXISTS users
+                 (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                 username TEXT UNIQUE NOT NULL,
+                 password TEXT NOT NULL)''')
+
+    # 创建任务表
+    c.execute('''CREATE TABLE IF NOT EXISTS tasks (
+                 id INTEGER PRIMARY KEY AUTOINCREMENT,
+                 uid INTEGER NOT NULL,
+                 name TEXT NOT NULL,
+                 due_date TEXT NOT NULL,
+                 duration INTEGER DEFAULT 1,
+                 type TEXT DEFAULT 'default',
+                 weight REAL DEFAULT 1.0,
+                 is_daily INTEGER DEFAULT 0,
+                 complete INTEGER DEFAULT 0,
+                 FOREIGN KEY(uid) REFERENCES users(id))''')
+
+    # 提交事务并关闭连接
+    conn.commit()
+    conn.close()
+
 def connect_db():
     return sqlite3.connect('todo.db')
 
-
 def close_db(conn):
     conn.close()
-
 
 '''
 上面两个是关于数据库链接相关的，一个打开一个关闭
@@ -25,14 +51,13 @@ def close_db(conn):
         print("User registered successfully.")
     else:
         print("Username already exists.")
-
+        
     输入：
     username:str
     password:str
-
+    
     return: bool
 '''
-
 def register_user(username, password):
     with connect_db() as conn:
         c = conn.cursor()
@@ -43,17 +68,16 @@ def register_user(username, password):
         except sqlite3.IntegrityError:
             return False
 
-
 '''
     用于更新用户数据
     示例：
     update_user(1, username="updated_username", password="new_password")
-
+    
     输入:
     user_id:int
     username:str
     password:str
-
+    
     输出：
     return: void
 '''
@@ -82,7 +106,7 @@ def update_user(user_id, username=None, password=None):
     else:
         print("Invalid username or password.")
         return None
-
+        
     输入：     
     username:str
     输出：
@@ -93,7 +117,6 @@ def get_user_info(username):
         c = conn.cursor()
         c.execute("SELECT * FROM users WHERE username = ?", (username,))
         return c.fetchone()
-
 
 '''
     用于添加事件
@@ -128,7 +151,6 @@ def delete_task(task_id):
         c.execute("DELETE FROM tasks WHERE id = ?", (task_id,))
         conn.commit()
 
-
 '''
     更新事件
     示例：
@@ -141,7 +163,6 @@ def delete_task(task_id):
 # 在 db_handler.py 中
 def update_task(task_id, name=None, due_date=None, duration=None, task_type=None, weight=None, is_daily=None):
     updates = []
-    params = [task_id]
     params = [task_id]
 
     if name is not None:
@@ -176,17 +197,16 @@ def update_task(task_id, name=None, due_date=None, duration=None, task_type=None
             c.execute(query, params)
             conn.commit()
 
-
 '''
     查询，获取过期事件表
     示例：
     expired_tasks = get_expired_tasks()
     for task in expired_tasks:
         print(task)
-
+        
     输入：用户id uid：int
     输出    mission类型的列表
-
+    
 '''
 def get_expired_tasks(uid):
     today = datetime.now().strftime("%Y-%m-%d")
@@ -215,10 +235,9 @@ def get_all_tasks(uid):
         rows = c.fetchall()
         return [mission_from_row(row) for row in rows]
 
-
 '''
     查询，特定日期前事件表
-
+    
     输入：用户id uid：int 
     due_date : datetime
     输出    mission类型的列表
@@ -231,7 +250,6 @@ def find_tasks_by_due_date(due_date, uid):
         rows = c.fetchall()
         return [mission_from_row(row) for row in rows]
 
-
 '''
     用于检查是否存在这一id对应的事件
     输入：task_id: int
@@ -243,7 +261,6 @@ def task_exists(task_id):
         c.execute("SELECT COUNT(*) FROM tasks WHERE id = ?", (task_id,))
         result = c.fetchone()[0]
         return result > 0
-
 
 '''
     内部自用小函数，莫管
@@ -259,5 +276,5 @@ def mission_from_row(row):
         row[5],  # type
         row[6],  # weight
         bool(row[7]),  # is_daily
-        bool(row[8])  # complete
+        bool(row[8])   # complete
     )
