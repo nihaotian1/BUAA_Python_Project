@@ -1,5 +1,5 @@
 from base.request import Request, Command
-import mission_utils
+import ctrl.mission_utils as m_utils
 
 
 '''
@@ -9,16 +9,16 @@ import mission_utils
     ret: 类型根据实际函数的不同会有区别
 '''
 def handle(req : Request):
-    if 1 <= req.req_type <= 5: # Mission Related
-        if req.req_type == Command.CREATE:
-            return mission_utils.create_mission(req.mission) # 0
-        elif req.req_type == Command.MODIFY:
-            return mission_utils.modify_mission(req.mission) # 0
-        elif req.req_type == Command.DELETE:
-            return mission_utils.delete_mission(req.mission) # 0
-        elif req.req_type == Command.GET_EXPIRED:
-            return mission_utils.get_expired_mission() # [missions]
-        elif req.req_type == Command.GET_ALL:
-            return mission_utils.get_all_mission()     # [missions]
+    # Mission Related
+    if req.req_type == Command.CREATE:
+        return m_utils.create_mission(req.mission) # 0
+    elif req.req_type == Command.MODIFY:
+        return m_utils.modify_mission(req.mission) # 0
+    elif req.req_type == Command.DELETE:
+        return m_utils.delete_mission(req.mission) # 0
+    elif req.req_type == Command.GET_EXPIRED:
+        return m_utils.get_expired_mission() # [missions]
+    elif req.req_type == Command.GET_ALL:
+        return m_utils.get_all_mission()     # [missions]
 
     raise Exception('Unknown request type')
