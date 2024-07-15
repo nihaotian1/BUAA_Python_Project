@@ -6,6 +6,8 @@ class Command(Enum):
     DELETE = 3,      # 任务删除
     GET_ALL = 4,     # 获取所有任务
     GET_EXPIRED = 5, # 获取所有过期任务
+    ADD_CATEGORY = 6,     # 增加一个新的mission类型
+    DELETE_CATEGORY = 7,  # 删除一个mission类型
 
 
 class Request:
