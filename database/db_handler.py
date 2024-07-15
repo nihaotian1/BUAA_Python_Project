@@ -180,46 +180,56 @@ def delete_task(task_id):
 
 # 在 db_handler.py 中
 def update_task(task_id, name=None, due_date=None, duration=None, task_type=None,
-                weight=None, is_daily=None, complete=False):
+                weight=None, is_daily=None, complete=None):
     updates = []
-    params = [task_id]
-
+    params = []
     if name is not None:
         updates.append("name = ?")
-        params.insert(0, name)
-
+        params.append(name)
+        
     if due_date is not None:
         updates.append("due_date = ?")
-        params.insert(0, due_date)
+        params.append(due_date)
 
     if duration is not None:
         updates.append("duration = ?")
-        params.insert(0, duration)
+        params.append(duration)
 
     if task_type is not None:
         updates.append("type = ?")
-        params.insert(0, task_type)
+        params.append(task_type)
 
     if weight is not None:
         updates.append("weight = ?")
-        params.insert(0, weight)
+        params.append(weight)
 
     if is_daily is not None:
         updates.append("is_daily = ?")
-        params.insert(0, int(is_daily))
+        params.append(int(is_daily))
 
-    updates.append("complete = ?")
-    params.insert(0, complete)
+    if complete is not None:
+        updates.append("complete = ?")
+        params.append(complete)
 
     if updates:
         query = "UPDATE tasks SET {} WHERE id = ?".format(", ".join(updates))
+        params.append(task_id)
 
         with connect_db() as conn:
             c = conn.cursor()
             c.execute(query, params)
             conn.commit()
 
-
+def get_task_by_id(task_id):
+    """根据ID获取任务的详细信息。如果任务存在，返回Mission对象；否则返回None。"""
+    with connect_db() as conn:
+        c = conn.cursor()
+        c.execute("SELECT * FROM tasks WHERE id = ?", (task_id,))
+        row = c.fetchone()
+        if row:
+            return mission_from_row(row)
+        else:
+            return None
 '''
     查询，获取过期事件表
     示例：
@@ -310,8 +320,8 @@ def task_exists(task_id):
     with connect_db() as conn:
         c = conn.cursor()
         c.execute("SELECT COUNT(*) FROM tasks WHERE id = ?", (task_id,))
-        result = c.fetchone()[0]
-        return result > 0
+        return c.fetchone()
+
 
 
 '''

@@ -8,7 +8,8 @@ from database.db_handler import connect_db, close_db, init_db
 
 
 class TaskManagerApp(Frame):
-    def __init__(self, root):
+    def __init__(self, uid,root):
+        self.uid = uid
         self.root = root
         self.root.title("任务顺序图")
         self.root.geometry("1200x720+150+0")  # 扩大视图界面
@@ -107,7 +108,7 @@ class TaskManagerApp(Frame):
         task_conTime = self.duration_entry.get().strip()
         # 调用后端处理函数
         task_type = self.type_entry.get().strip()
-        oneMission = Mission(1,task_name,deadline,duration=task_conTime,type=task_type)
+        oneMission = Mission(self.uid,task_name,deadline,duration=task_conTime,type=task_type)
         req = Request(req_type=Command.CREATE,uid=-1,mission=oneMission)
         handle((req))
         # 更新任务列表
@@ -121,6 +122,7 @@ class TaskManagerApp(Frame):
             index = selected_index[0]  # 这个能返回鼠标点击的行号
             mession = self.tasks[index]
             mession.complete = True
+            print("向后端发送mission的name:",mession.name)
             req = Request(Command.MODIFY,1,mession)
             # 更新后端数据
             handle(req)
@@ -140,19 +142,17 @@ class TaskManagerApp(Frame):
         # 这里为了简化，我们仅允许通过控制台更新状态（实际中可能需要更复杂的界面）
         print("更新任务状态功能暂未实现完整GUI界面，请通过控制台操作。")
 
-    def getAllTasks(self,uid): # 更新tasks
-        req = Request(Command.GET_ALL,uid)
+    def getAllTasks(self): # 更新tasks
+        req = Request(Command.GET_ALL,self.uid)
         self.tasks = handle(req)
 
     def update_task_list(self): # 更新任务列表，调用上面那个函数
-        self.getAllTasks(1)
+        self.getAllTasks()
         self.task_listbox.delete(0, END)
         status_color = 'lightgrey'
         staus_str = '未完成'
         for mission in self.tasks:
-            print(mission.complete)
-            print(mission.name)
-            print(mission.due)
+            print("修改后的任务名称",mission.name)
             try:
                 if(mission.complete == False):
                     due = datetime.strptime(mission.due, "%Y-%m-%d") # 返回datetime对象
@@ -182,10 +182,9 @@ class TaskManagerApp(Frame):
             self.task_listbox.insert(END,  task_str)
             self.task_listbox.itemconfig(END, bg=status_color)
 
-def openSequenceDiagram():
-    root = tk.Tk()
-    init_db()
-    app = TaskManagerApp(root)
+def openSequenceDiagram(uid,root):  # 需要传入用户id和root窗口
+    init_db()  # 初始化数据库
+    app = TaskManagerApp(uid,root)
     root.mainloop()
 
-openSequenceDiagram()
+openSequenceDiagram(1,tk.Tk())  # 使用方式示例
