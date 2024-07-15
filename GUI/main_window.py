@@ -1,12 +1,12 @@
 import tkinter as tk
-from datetime import datetime
-from ctrl.handler import handle
-from base.request import Command, Request
-from base.mission import Mission
-from database.db_handler import connect_db, close_db, init_db
+#from datetime import datetime
+#from ctrl.handler import handle
+#from base.request import Command, Request
+#from base.mission import Mission
+#from database.db_handler import connect_db, close_db, init_db
 
 
-def create_sidebar(sidebar, content_area):
+def create_sidebar(sidebar):
     def toggle_categories():
         if categories_frame.winfo_ismapped():  # 如果类别已经显示，则隐藏
             categories_frame.pack_forget()
@@ -19,8 +19,33 @@ def create_sidebar(sidebar, content_area):
     # 创建所有类别的按钮并放入categories_frame中
     categories = ["未分类", "工作", "学习", "竞赛", "生活", "长期规划", "放纵"]
     for category in categories:
-        button = tk.Button(categories_frame, text=category, command=lambda cat=category: print(cat))
-        button.pack(side="top", fill="x")
+        if category == "未分类":
+            button = tk.Button(categories_frame, text=category, command=uncategorized_list)
+            button.pack(side="top", fill="x")
+
+        elif category == "工作":
+            button = tk.Button(categories_frame, text=category, command=work_list)
+            button.pack(side="top", fill="x")
+
+        elif category == "学习":
+            button = tk.Button(categories_frame, text=category, command=study_list)
+            button.pack(side="top", fill="x")
+
+        elif category == "竞赛":
+            button = tk.Button(categories_frame, text=category, command=contest_list)
+            button.pack(side="top", fill="x")
+
+        elif category == "生活":
+            button = tk.Button(categories_frame, text=category, command=life_list)
+            button.pack(side="top", fill="x")
+
+        elif category == "长期规划":
+            button = tk.Button(categories_frame, text=category, command=long_term_planning_list)
+            button.pack(side="top", fill="x")
+
+        elif category == "放纵":
+            button = tk.Button(categories_frame, text=category, command=intemperance_list)
+            button.pack(side="top", fill="x")
 
     # 最初隐藏类别按钮
     categories_frame.pack_forget()
@@ -36,13 +61,41 @@ def create_sidebar(sidebar, content_area):
     todo_box_button.pack(side="top", fill="x")
 
     # 添加一些垂直间距
-    spacer = tk.Label(sidebar, text="", pady=10)  # pady设置间距大小
+    spacer = tk.Label(sidebar, text="", pady=10)
     spacer.pack(side="top", fill="x")
 
     # 创建“分类清单”按钮，点击时切换显示/隐藏类别按钮
     # 将其置于“待办箱”按钮下方，并与之保持一定距离
     categories_button = tk.Button(sidebar, text="分类清单", command=toggle_categories)
     categories_button.pack(side="top", fill="x")
+
+
+def uncategorized_list():
+    task = ["甲", "乙", "丙", "丁", "戊", "己"]
+
+
+def work_list():
+    task = ["甲"]
+
+
+def study_list():
+    task = ["乙"]
+
+
+def life_list():
+    task = ["丙"]
+
+
+def contest_list():
+    task = ["丁"]
+
+
+def long_term_planning_list():
+    task = ["戊"]
+
+
+def intemperance_list():
+    task = ["己"]
 
 
 class TaskDisplayApp:
@@ -82,7 +135,7 @@ class TaskDisplayApp:
         main_frame.rowconfigure(1, minsize=50)  # 下边栏有最小高度100像素
 
         # 在侧边栏添加一些内容
-        create_sidebar(sidebar, content_area)
+        create_sidebar(sidebar)
 
         # 在下边栏添加一些内容
         tk.Label(bottom_bar, text="下边栏").pack(fill='x')
