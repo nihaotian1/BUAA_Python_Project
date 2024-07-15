@@ -13,15 +13,11 @@ class TaskManagerApp(Frame):
         self.root.title("任务顺序图")
         self.root.geometry("1200x720+150+0")  # 扩大视图界面
 
-        self.tasks = []  # 存储任务信息的列表
+        self.getAllTasks(1)  # 存储任务信息的列表
 
         # 创建UI框架
         self.setup_ui()
 
-    def getAllTasks(self,uid):
-        req = Request(Command.GET_ALL,uid)
-        tasks = handle(req)
-        print(tasks)
 
     def setup_ui(self):
         # 顶部标签和输入框框架
@@ -83,33 +79,30 @@ class TaskManagerApp(Frame):
         self.task_listbox.pack(pady=20)
 
     def add_task(self):
+        # 解析输入名称和日期
         task_name = self.task_name_entry.get().strip()
         if not task_name:
             return
-
         deadline_str = self.deadline_entry.get().strip()
         deadline = None
         if deadline_str:
             try:
                 deadline = datetime.strptime(deadline_str, "%Y-%m-%d") # "%Y-%m-%d %H:%M:%S.%f"
+                deadline = deadline.date()
             except ValueError:
                 print("截止日期格式错误，应为 YYYY-MM-DD")
                 return
         else:
-            deadline = datetime.now()
+            deadline = datetime.now().date()
         task_conTime = self.duration_entry.get().strip()
+        # 调用后端处理函数
         task_type = self.type_entry.get().strip()
-        oneMission = Mission(1,task_name,task_conTime,type=task_type)
+        oneMission = Mission(1,task_name,deadline,duration=task_conTime,type=task_type)
         req = Request(req_type=Command.CREATE,uid=-1,mission=oneMission)
         handle((req))
-
-        task_status = '未开始'
-        if(datetime.now().date() > deadline.date()):
-            task_status = '已过期'
-        if(datetime.now().date() == deadline.date()):
-            task_status = '正在进行'
-        self.tasks.append({'name': task_name, 'status': task_status, 'deadline': deadline})
+        # 更新任务列表
         self.update_task_list()
+        # 关闭添加任务界面
         self.closeADDFrame()
 
     def update_task_status(self):
@@ -120,24 +113,46 @@ class TaskManagerApp(Frame):
         selected_index = self.task_listbox.curselection()
         if selected_index:
             index = selected_index[0]
-            del self.tasks[index]
+            mession = self.tasks.pop(index)
+            req = Request(Command.DELETE,1,mession)
+            # 删除后端数据
+            handle(req)
             self.update_task_list()
 
-    def update_task_list(self):
-        # self.task_listbox.delete(0, END)
-        self.getAllTasks(1)
-        for index, task in enumerate(self.tasks):
-            status_color = {
-                '未开始': 'lightgrey',
-                '正在进行': 'yellow',
-                '已完成': 'green',
-                '已过期': 'red'
-            }[task['status']]
+    def getAllTasks(self,uid):
+        req = Request(Command.GET_ALL,uid)
+        self.tasks = handle(req)
 
-            deadline_str = task['deadline'].strftime("%Y-%m-%d") if task['deadline'] else '无'
-            task_str = f"{task['name']} - {task['status']} (截止: {deadline_str})"
+    def update_task_list(self):
+        self.getAllTasks(1)
+        self.task_listbox.delete(0, END)
+        status_color = 'lightgrey'
+        staus_str = '未完成'
+        for mission in self.tasks:
+            try:
+                due = datetime.strptime(mission.due, "%Y-%m-%d")
+                due = due.date()
+            except:
+                print("后端返回的日期格式错误")
+            try:
+                if mission.complete:
+                    status_color = 'green'
+                    staus_str = '已完成'
+                elif due < datetime.now().date():
+                    status_color ='red'
+                    staus_str = '已过期'
+                elif due == datetime.now().date():
+                    status_color = 'yellow'
+                    staus_str = '进行中'
+                else:
+                    status_color = 'lightgrey'
+            except:
+                print("error")
+
+            deadline_str = mission.due
+            task_str = f"{mission.name} - {staus_str} (截止: {deadline_str})"
             self.task_listbox.insert(END, task_str)
-            self.task_listbox.itemconfig(index, bg=status_color)
+            self.task_listbox.itemconfig(END, bg=status_color)
 
 def openSequenceDiagram():
     root = tk.Tk()
