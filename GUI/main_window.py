@@ -66,6 +66,7 @@ class TaskDisplayApp:
             listbox.insert(tk.END, task)
         listbox.pack(side="top", fill='both')
 
+
     def create_sidebar(self, sidebar):
         def uncategorized_list():
             task = ["甲", "乙", "丙", "丁", "戊", "己"]
