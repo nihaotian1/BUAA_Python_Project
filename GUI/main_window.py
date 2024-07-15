@@ -70,10 +70,10 @@ def show_tasks(event, button):
     print(f"显示 {date_str} 的任务")  # 打印所选日期的任务
 
 
-def main():
+def main_window():
     # 创建主窗口
     root = tk.Tk()
-    root.title("主界面示例")
+    root.title("主界面")
 
     # 设置窗口大小
     screen_width = root.winfo_screenwidth()
@@ -115,6 +115,4 @@ def main():
     root.mainloop()
 
 
-
-if __name__ == "__main__":
-    main()
+main_window()
