@@ -47,7 +47,7 @@ def modify_mission(mission, uid=-1):
         raise Exception('Unknown UserId!')
 
     db.update_task(mission.mid, mission.name, mission.due, mission.duration, mission.type,
-                   mission.weight, mission.isdaily)
+                   mission.weight, mission.isdaily, mission.complete)
 
     return 0 # 0 on success
 
