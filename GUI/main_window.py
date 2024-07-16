@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkcalendar import Calendar
 #from datetime import datetime
 #from ctrl.handler import handle
 #from base.request import Command, Request
@@ -35,8 +36,6 @@ class TaskDisplayApp:
         bottom_bar = tk.Frame(main_frame)
         bottom_bar.grid(row=1, column=0, columnspan=2, sticky="ew")
 
-
-
         # 调整列权重，使得主界面内容区域比侧边栏宽
         main_frame.columnconfigure(1, weight=4)  # 主界面内容区域占80%
         main_frame.columnconfigure(0, weight=1)  # 侧边栏占20%
@@ -66,6 +65,42 @@ class TaskDisplayApp:
             listbox.insert(tk.END, task)
         listbox.pack(side="top", fill='both')
 
+
+    def show_calendar(self):
+        def select_date():
+            # 当用户选择日期时，这个函数会被调用
+            selected_date = cal.get_date()
+            date_label.config(text=f"Selected Date: {selected_date}")
+
+        for widget in self.content_area.winfo_children():
+            widget.destroy()
+
+        cal = Calendar(self.content_area, selectmode='day', year=2024, month=7, day=16)
+        cal.pack(side="top", fill="both", pady=20)
+
+        # 添加一个按钮用于获取选中的日期
+        select_button = tk.Button(self.content_area, text="Select Date", command=select_date)
+        select_button.pack()
+
+        date_label = tk.Label(self.content_area, text="")
+        date_label.pack()
+
+        tasks = ["任务甲", "任务乙", "任务丙"]
+        # 创建一个用于显示任务列表的Listbox
+        listbox = tk.Listbox(self.content_area, bg="white")
+        # listbox.grid(row=0, column=1, sticky="nsew")
+
+        for task in tasks:
+            listbox.insert(tk.END, task)
+        listbox.pack()
+
+    def recently_to_be_done_list(self):
+        task = ["庚"]
+        self.display_task_list(task)
+
+    def todo_box(self):
+        task = ["辛"]
+        self.display_task_list(task)
 
     def create_sidebar(self, sidebar):
         def uncategorized_list():
@@ -129,13 +164,13 @@ class TaskDisplayApp:
         self.categories_frame.pack_forget()
 
         # 其他按钮保持不变
-        day_todo_button = tk.Button(sidebar, text="Day Todo", command=lambda: print("Day Todo"))
+        day_todo_button = tk.Button(sidebar, text="Day Todo", command=self.show_calendar)
         day_todo_button.pack(side="top", fill="x")
 
-        recent_tasks_button = tk.Button(sidebar, text="最近待办", command=lambda: print("最近待办"))
+        recent_tasks_button = tk.Button(sidebar, text="最近待办", command=self.recently_to_be_done_list)
         recent_tasks_button.pack(side="top", fill="x")
 
-        todo_box_button = tk.Button(sidebar, text="待办箱", command=lambda: print("待办箱"))
+        todo_box_button = tk.Button(sidebar, text="待办箱", command=self.todo_box)
         todo_box_button.pack(side="top", fill="x")
 
         # 添加一些垂直间距
