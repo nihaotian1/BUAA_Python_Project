@@ -7,20 +7,56 @@ from base.mission import Mission
 from database.db_handler import connect_db, close_db, init_db
 
 
-class TaskManagerApp(Frame):
-    def __init__(self, uid,root):
-        self.uid = uid
-        self.root = root
+class TaskManagerApp(Frame): # 顺序图界面 也是编辑界面
+    def __init__(self,app = None):
+
+        # 继承上一级数据
+        self.uid = app.uid
+        self.nickname = app.nickname
+        self.root = app.root
+        self.main_frame = app.main_frame
+        self.content_area = app.content_area
+        self.start_button = app.start_button
+        self.overview_button = app.overview_button
+        self.edit_button = app.edit_button
+
+        # 修改上一级数据
+        self.content_area.destroy() # 销毁原来的内容区域，注意所有不能留给下一界面的组件都需要放在这里，因为只摧毁它
         self.root.title("任务顺序图")
         self.root.geometry("1200x720+150+0")  # 扩大视图界面
+
+        # 修改按钮颜色与指令
+        self.start_button["bg"] = "white"
+        self.overview_button["bg"] = "white"
+        self.edit_button["bg"] = "DarkGray"
+
+        self.start_button["command"] = self.bit_to_welcome
+        self.overview_button["command"] = self.bit_to_main
+        self.edit_button["command"] = None
+
+        # 恢复框架结构 ，只摧毁了content_area
+        self.content_area = tk.Frame(self.main_frame)
+        self.content_area.grid(row=0, ipadx=1, ipady=1, sticky="nsew")
+
+        self.main_frame.columnconfigure(0, weight=1)
+        self.main_frame.columnconfigure(1, weight=0)
+        self.main_frame.rowconfigure(0, weight=1)  # 主界面和侧边栏的高度可变
+        self.main_frame.rowconfigure(1, minsize=50)  # 下边栏有最小高度100像素
 
         # 创建UI框架
         self.setup_ui()
 
+    def bit_to_welcome(self):
+        openWelcomeWindow(self)
+
+    def bit_to_main(self):
+        # self.close_window()
+        print("want from edit to main")
 
     def setup_ui(self):
         # 添加任务输入框框架
-        self.AddFrame = Frame(self.root,width=100,height=500,bg="LightSteelBlue")
+
+        self.AddFrame = Frame(self.content_area,width=100,height=500,bg="LightSteelBlue")
         self.AddFrame.place(relx = 0,rely = 0)
 
         Label(self.AddFrame, text="添加新的任务:", font=("Arial", 14)).grid(row=0, column=0, padx=0, pady=5)
@@ -58,7 +94,7 @@ class TaskManagerApp(Frame):
         self.AddFrame.place_forget() # 隐藏输入框直到用户点击ADD按钮
 
         # 任务列表区域
-        self.task_list_frame = Frame(self.root,width=100,height=500,bg="Cyan")
+        self.task_list_frame = Frame(self.content_area,width=100,height=500,bg="Cyan")
         self.task_list_frame.pack(pady=20)
         button_frame = Frame(self.task_list_frame,width=100,height=50,bg="Cyan")
         button_frame.grid(row =0, column =0, padx=0, pady=5)
@@ -71,7 +107,7 @@ class TaskManagerApp(Frame):
 
 
         # add按钮,remove按钮
-        topF = Frame(self.root,width=30,height=20,bg="Cyan")
+        topF = Frame(self.content_area,width=30,height=20,bg="Cyan")
         topF.place(relx = 0.9,rely = 0.8)
         self.button_add = Button(topF,text = "+",command=self.openADDFrame,bg="yellow")
         self.button_add.pack()
@@ -152,7 +188,6 @@ class TaskManagerApp(Frame):
         status_color = 'lightgrey'
         staus_str = '未完成'
         for mission in self.tasks:
-            print("修改后的任务名称",mission.name)
             try:
                 if(mission.complete == False):
                     due = datetime.strptime(mission.due, "%Y-%m-%d") # 返回datetime对象
@@ -182,9 +217,14 @@ class TaskManagerApp(Frame):
             self.task_listbox.insert(END,  task_str)
             self.task_listbox.itemconfig(END, bg=status_color)
 
-def openSequenceDiagram(uid,root):  # 需要传入用户id和root窗口
-    init_db()  # 初始化数据库
-    app = TaskManagerApp(uid,root)
-    root.mainloop()
+    def close_window(self):
+        # 关闭窗口，这将间接关闭Frame
+        self.root.destroy()
 
-openSequenceDiagram(1,tk.Tk())  # 使用方式示例
+def openSequenceDiagram(app=None):  # 需要传入用户id和root窗口
+    init_db()  # 初始化数据库
+    newApp = TaskManagerApp(app)
+    return newApp
+
+
+
