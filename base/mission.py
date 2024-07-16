@@ -1,11 +1,13 @@
 class Mission:
-    def __init__(self, uid, name, due, mid=-1, duration=1, type='default', weight=1.0, is_daily=False, complete=False):
+    def __init__(self, uid, name, due, description, mid=-1, duration=1, type='default', weight=1.0, is_daily=False, complete=False):
         # 用户ID
         self.uid = uid
         # 任务ID
         self.mid = mid
         # 任务名称
         self.name = name
+        # 任务描述
+        self.description = description
         # 任务日期设定，if 当前日期 > due ==> 过期
         self.due = due
         # 任务类型

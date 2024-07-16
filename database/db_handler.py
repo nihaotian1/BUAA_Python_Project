@@ -21,6 +21,7 @@ def init_db():
                  id INTEGER PRIMARY KEY AUTOINCREMENT,
                  uid INTEGER NOT NULL,
                  name TEXT NOT NULL,
+                 description TEXT NOT NULL,
                  due_date TEXT NOT NULL,
                  duration INTEGER DEFAULT 1,
                  type TEXT DEFAULT 'default',
@@ -140,12 +141,12 @@ def get_user_info(username):
 '''
 
 
-def add_task(user_id, name, due_date, duration=1, task_type='default', weight=1.0, is_daily=False):
+def add_task(user_id, name, description, due_date, duration=1, task_type='default', weight=1.0, is_daily=False):
     with connect_db() as conn:
         c = conn.cursor()
-        c.execute("INSERT INTO tasks (uid, name, due_date, duration, type, weight, is_daily) "
+        c.execute("INSERT INTO tasks (uid, name,description, due_date, duration, type, weight, is_daily) "
                   "VALUES (?, ?, ?, ?, ?, ?, ?)",
-                  (user_id, name, due_date, duration, task_type, weight, int(is_daily)))
+                  (user_id, name,description , due_date, duration, task_type, weight, int(is_daily)))
         conn.commit()
 
 
@@ -179,47 +180,61 @@ def delete_task(task_id):
 
 
 # 在 db_handler.py 中
-def update_task(task_id, name=None, due_date=None, duration=None, task_type=None,
-                weight=None, is_daily=None, complete=False):
+def update_task(task_id, name=None, description=None, due_date=None, duration=None, task_type=None,
+                weight=None, is_daily=None, complete=None):
     updates = []
-    params = [task_id]
-
+    params = []
     if name is not None:
         updates.append("name = ?")
-        params.insert(0, name)
+        params.append(name)
+
+    if name is not None:
+        updates.append("description = ?")
+        params.append(description)
 
     if due_date is not None:
         updates.append("due_date = ?")
-        params.insert(0, due_date)
+        params.append(due_date)
 
     if duration is not None:
         updates.append("duration = ?")
-        params.insert(0, duration)
+        params.append(duration)
 
     if task_type is not None:
         updates.append("type = ?")
-        params.insert(0, task_type)
+        params.append(task_type)
 
     if weight is not None:
         updates.append("weight = ?")
-        params.insert(0, weight)
+        params.append(weight)
 
     if is_daily is not None:
         updates.append("is_daily = ?")
-        params.insert(0, int(is_daily))
+        params.append(int(is_daily))
 
-    updates.append("complete = ?")
-    params.insert(0, complete)
+    if complete is not None:
+        updates.append("complete = ?")
+        params.append(complete)
 
     if updates:
         query = "UPDATE tasks SET {} WHERE id = ?".format(", ".join(updates))
+        params.append(task_id)
 
         with connect_db() as conn:
             c = conn.cursor()
             c.execute(query, params)
             conn.commit()
 
-
+def get_task_by_id(task_id):
+    """根据ID获取任务的详细信息。如果任务存在，返回Mission对象；否则返回None。"""
+    with connect_db() as conn:
+        c = conn.cursor()
+        c.execute("SELECT * FROM tasks WHERE id = ?", (task_id,))
+        row = c.fetchone()
+        if row:
+            return mission_from_row(row)
+        else:
+            return None
 '''
     查询，获取过期事件表
     示例：
@@ -310,8 +325,8 @@ def task_exists(task_id):
     with connect_db() as conn:
         c = conn.cursor()
         c.execute("SELECT COUNT(*) FROM tasks WHERE id = ?", (task_id,))
-        result = c.fetchone()[0]
-        return result > 0
+        return c.fetchone()
+
 
 
 '''
@@ -364,6 +379,7 @@ def mission_from_row(row):
     return Mission(
         row[1],  # uid
         row[2],  # name
+        row[3],  # description
         row[3],  # due_date
         row[0],  # mid
         row[4],  # duration
