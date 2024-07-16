@@ -5,7 +5,7 @@ from ctrl.handler import handle
 from base.request import Command,Request
 from base.mission import Mission
 from database.db_handler import connect_db, close_db, init_db
-from GUI.SequenceDiagram import openSequenceDiagram
+from GUI.SequenceDiagram import createEditWindowAndReturn
 
 
 
@@ -37,14 +37,10 @@ class RootWindow(tk.Frame): # 开始界面
             self.root.title("Welcome to Mission Planner" + self.nickname)
             self.root.geometry("1200x720+150+0")  # 扩大视图界面
 
-            # 修改按钮颜色与指令
+            # 修改按钮颜色  注意指令始终不变，否则会导致import循环依赖，造成死锁
             self.start_button["bg"] = "DarkGray"
             self.overview_button["bg"] = "white"
             self.edit_button["bg"] = "white"
-
-            self.start_button["command"] = None
-            self.overview_button["command"] = self.bit_to_main
-            self.edit_button["command"] = self.bit_to_edit
 
             # 恢复框架结构 ，只摧毁了content_area
             self.content_area = tk.Frame(self.main_frame)
@@ -84,7 +80,7 @@ class RootWindow(tk.Frame): # 开始界面
         status_label.pack(side=tk.LEFT, fill=tk.X, pady=5)
 
         # 在bottom_bar中创建按钮
-        self.start_button = tk.Button(bottom_bar, text="开始",bg= "DarkGray")
+        self.start_button = tk.Button(bottom_bar, text="开始",command = self.bit_to_start,bg= "DarkGray")
         self.start_button.pack(side=tk.LEFT, expand=True, fill=tk.X, padx=5)
 
         self.overview_button = tk.Button(bottom_bar, text="总览",command=self.bit_to_main)
@@ -100,8 +96,11 @@ class RootWindow(tk.Frame): # 开始界面
 
     def bit_to_edit(self):
         print("want from start to edit")
-        openSequenceDiagram(self)
+        createEditWindowAndReturn(self)
         print("sussess to edit")
+
+    def bit_to_start(self):
+        openWelcomeWindow(self)
 
 
     def bit_to_main(self):

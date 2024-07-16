@@ -6,7 +6,6 @@ from base.request import Command,Request
 from base.mission import Mission
 from database.db_handler import connect_db, close_db, init_db
 
-
 class TaskManagerApp(Frame): # 顺序图界面 也是编辑界面
     def __init__(self,app = None):
 
@@ -25,14 +24,10 @@ class TaskManagerApp(Frame): # 顺序图界面 也是编辑界面
         self.root.title("任务顺序图")
         self.root.geometry("1200x720+150+0")  # 扩大视图界面
 
-        # 修改按钮颜色与指令
+        # 修改按钮颜色  注意不能修改指令，否则会导致循环依赖import，导致死锁！！！！！！！！！！！！
         self.start_button["bg"] = "white"
         self.overview_button["bg"] = "white"
         self.edit_button["bg"] = "DarkGray"
-
-        self.start_button["command"] = self.bit_to_welcome
-        self.overview_button["command"] = self.bit_to_main
-        self.edit_button["command"] = None
 
         # 恢复框架结构 ，只摧毁了content_area
         self.content_area = tk.Frame(self.main_frame)
@@ -46,12 +41,6 @@ class TaskManagerApp(Frame): # 顺序图界面 也是编辑界面
         # 创建UI框架
         self.setup_ui()
 
-    def bit_to_welcome(self):
-        openWelcomeWindow(self)
-
-    def bit_to_main(self):
-        # self.close_window()
-        print("want from edit to main")
 
     def setup_ui(self):
         # 添加任务输入框框架
@@ -221,10 +210,10 @@ class TaskManagerApp(Frame): # 顺序图界面 也是编辑界面
         # 关闭窗口，这将间接关闭Frame
         self.root.destroy()
 
-def openSequenceDiagram(app=None):  # 需要传入用户id和root窗口
+def createEditWindowAndReturn(app=None):  # 需要传入用户id和root窗口
     init_db()  # 初始化数据库
     newApp = TaskManagerApp(app)
-    return newApp
+    return newApp.content_area
 
 
 
