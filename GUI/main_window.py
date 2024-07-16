@@ -1,10 +1,10 @@
 import tkinter as tk
 from tkcalendar import Calendar
-#from datetime import datetime
-#from ctrl.handler import handle
-#from base.request import Command, Request
-#from base.mission import Mission
-#from database.db_handler import connect_db, close_db, init_db
+# from datetime import datetime
+# from ctrl.handler import handle
+# from base.request import Command, Request
+# from base.mission import Mission
+# from database.db_handler import connect_db, close_db, init_db
 
 
 class TaskDisplayApp:
@@ -64,7 +64,6 @@ class TaskDisplayApp:
         for task in tasks:
             listbox.insert(tk.END, task)
         listbox.pack(side="top", fill='both')
-
 
     def show_calendar(self):
         def select_date():
