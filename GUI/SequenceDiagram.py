@@ -48,14 +48,14 @@ class TaskManagerApp(Frame): # 顺序图界面 也是编辑界面
         self.AddFrame = Frame(self.content_area,width=100,height=500,bg="LightSteelBlue")
         self.AddFrame.place(relx = 0,rely = 0)
 
-        Label(self.AddFrame, text="添加新的任务:", font=("Arial", 14)).grid(row=0, column=0, padx=0, pady=5)
+        Label(self.AddFrame, text="请添加新的任务:", font=("宋体", 14)).grid(row=0, column=0, padx=0, pady=5)
         Label(self.AddFrame, text="(带*号选填)", font=("Arial", 14)).grid(row=0, column=1, padx=0, pady=5)
 
         Label(self.AddFrame, text="任务名称:").grid(row=1, column=0, padx=10, pady=5)
         self.task_name_entry = Entry(self.AddFrame, width=40)
         self.task_name_entry.grid(row=1, column=1, padx=10, pady=5)
 
-        Label(self.AddFrame, text="截止日期 (YYYY-MM-DD):").grid(row=2, column=0, padx=10, pady=5)
+        Label(self.AddFrame, text="*截至 (YYYY-MM-DD)\n不写默认今天:").grid(row=2, column=0, padx=10, pady=5)
         self.deadline_entry = Entry(self.AddFrame, width=20)
         self.deadline_entry.grid(row=2, column=1, padx=10, pady=5)
 
@@ -85,14 +85,16 @@ class TaskManagerApp(Frame): # 顺序图界面 也是编辑界面
         # 任务列表区域
         self.task_list_frame = Frame(self.content_area,width=100,height=500,bg="Cyan")
         self.task_list_frame.pack(pady=20)
+
         button_frame = Frame(self.task_list_frame,width=100,height=50,bg="Cyan")
-        button_frame.grid(row =0, column =0, padx=0, pady=5)
+        button_frame.grid(row =0, column =0, padx=0, pady=0)
+        self.remove_button = Button(button_frame, text="删除所选任务", command=self.remove_task, bg="red")
+        self.complete_button = Button(button_frame, text="完成所选任务", command=self.complete_task, bg="green")
+        self.remove_button.grid(row=0, column=0, padx=0, pady=5)
+        self.complete_button.grid(row=0, column=1, padx=1, pady=5)
+
         self.task_listbox = Listbox(self.task_list_frame, width=100, height=30, font=("Arial", 14), bg="Cyan")
-        self.task_listbox.grid(row=1, column=0, padx=0, pady=5)
-        self.remove_button = Button(button_frame, text="删除所选任务", command=self.remove_task,bg = "red")
-        self.complete_button = Button(button_frame, text="完成所选任务", command=self.complete_task,bg = "green")
-        self.remove_button.grid(row =0, column =0, padx=0, pady=5)
-        self.complete_button.grid(row =0, column =1, padx=1, pady=5)
+        self.task_listbox.grid(row=1, column=0, padx=0, pady=0)
 
 
         # add按钮,remove按钮
@@ -134,7 +136,7 @@ class TaskManagerApp(Frame): # 顺序图界面 也是编辑界面
         # 调用后端处理函数
         task_type = self.type_entry.get().strip()
         oneMission = Mission(self.uid,task_name,deadline,duration=task_conTime,type=task_type)
-        req = Request(req_type=Command.CREATE,uid=-1,mission=oneMission)
+        req = Request(req_type=Command.CREATE,uid=self.uid,mission=oneMission)
         handle((req))
         # 更新任务列表
         self.update_task_list()
@@ -142,26 +144,75 @@ class TaskManagerApp(Frame): # 顺序图界面 也是编辑界面
         self.closeADDFrame()
 
     def complete_task(self):
-        selected_index = self.task_listbox.curselection()
-        if selected_index:
-            index = selected_index[0]  # 这个能返回鼠标点击的行号
-            mession = self.tasks[index]
-            mession.complete = True
-            print("向后端发送mission的name:",mession.name)
-            req = Request(Command.MODIFY,1,mession)
-            # 更新后端数据
-            handle(req)
-            self.update_task_list()
+        top = tk.Toplevel()
+        top.title("完成任务确认")
+
+        top.geometry("200x100+680+300")
+
+        # 弹窗中的文本
+        label = tk.Label(top, text="真的完成了吗，年轻人？")
+        label.pack(pady=20)
+
+        def on_cancel():
+            # 弹窗关闭
+            top.destroy()
+
+        cancel_button = tk.Button(top, text="啊……这", command=on_cancel,bg = "DarkGray")
+        cancel_button.pack(side=tk.LEFT, padx=10, pady=10)
+
+        # 确认按钮
+        def on_confirm():
+            # 执行指令
+            selected_index = self.task_listbox.curselection()
+            if selected_index:
+                index = selected_index[0]  # 这个能返回鼠标点击的行号
+                mession = self.tasks[index]
+                mession.complete = True
+                req = Request(Command.MODIFY, self.uid, mession)
+                # 更新后端数据
+                handle(req)
+                self.update_task_list()
+            # 弹窗关闭
+            top.destroy()
+
+        confirm_button = tk.Button(top, text="完成啦！", command=on_confirm,bg = "green")
+        confirm_button.pack(side=tk.RIGHT, padx=10, pady=10)
+
 
     def remove_task(self):
-        selected_index = self.task_listbox.curselection()
-        if selected_index:
-            index = selected_index[0]  # 这个能返回鼠标点击的行号
-            mession = self.tasks.pop(index)
-            req = Request(Command.DELETE,1,mession)
-            # 删除后端数据
-            handle(req)
-            self.update_task_list()
+        top = tk.Toplevel()
+        top.title("删除任务确认")
+
+        top.geometry("200x100+680+300")
+
+        # 弹窗中的文本
+        label = tk.Label(top, text="真的要删除任务吗，年轻人？")
+        label.pack(pady=20)
+
+        def on_cancel():
+            # 弹窗关闭
+            top.destroy()
+
+        cancel_button = tk.Button(top, text="再考虑一下", command=on_cancel,bg = "DarkGray")
+        cancel_button.pack(side=tk.LEFT, padx=10, pady=10)
+
+        # 确认按钮
+        def on_confirm():
+            # 执行指令
+            selected_index = self.task_listbox.curselection()
+            if selected_index:
+                index = selected_index[0]  # 这个能返回鼠标点击的行号
+                mession = self.tasks.pop(index)
+                req = Request(Command.DELETE, self.uid, mession)
+                # 删除后端数据
+                handle(req)
+                self.update_task_list()
+            # 弹窗关闭
+            top.destroy()
+
+        confirm_button = tk.Button(top, text="就删！", command=on_confirm,bg = "red")
+        confirm_button.pack(side=tk.RIGHT, padx=10, pady=10)
+
 
     def update_task_status(self):
         # 这里为了简化，我们仅允许通过控制台更新状态（实际中可能需要更复杂的界面）
@@ -199,7 +250,7 @@ class TaskManagerApp(Frame): # 顺序图界面 也是编辑界面
                 print("error")
 
             deadline_str = mission.due
-            if deadline_str == '0':
+            if staus_str == '已完成':
                 task_str = f"{mission.name} - {staus_str}"
             else:
                 task_str = f"{mission.name} - {staus_str} (截止: {deadline_str})"
@@ -210,8 +261,8 @@ class TaskManagerApp(Frame): # 顺序图界面 也是编辑界面
         # 关闭窗口，这将间接关闭Frame
         self.root.destroy()
 
+
 def createEditWindowAndReturn(app=None):  # 需要传入用户id和root窗口
-    init_db()  # 初始化数据库
     newApp = TaskManagerApp(app)
     return newApp.content_area
 

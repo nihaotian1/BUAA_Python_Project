@@ -13,6 +13,7 @@ class RootWindow(tk.Frame): # 开始界面
     def __init__(self, root,app=None):
         if app is None: # 第一次打开界面，需要初始化
             self.uid = -1
+            self.nickname = "游客"
             if(self.uid == -1):
                 self.sign_in()
             self.root = root
@@ -21,6 +22,9 @@ class RootWindow(tk.Frame): # 开始界面
 
             # 创建UI框架
             self.setup_side_buttom()
+            self.setup_content_area()
+
+
         else: # 已经打开过界面，不需要初始化
             # 继承上一级数据
             self.uid = app.uid
@@ -50,6 +54,10 @@ class RootWindow(tk.Frame): # 开始界面
             self.main_frame.columnconfigure(1, weight=0)
             self.main_frame.rowconfigure(0, weight=1)  # 主界面和侧边栏的高度可变
             self.main_frame.rowconfigure(1, minsize=50)  # 下边栏有最小高度100像素
+
+            # 编辑主界面
+
+            self.setup_content_area()
 
 
 
@@ -91,8 +99,70 @@ class RootWindow(tk.Frame): # 开始界面
 
 
 
+    def setup_content_area(self):
         # 在主界面内容区域添加一些内容
-        tk.Label(self.content_area, text="主界面").pack(expand=True, fill='both')
+
+        text_frame = tk.Frame(self.content_area)
+        text_frame.pack(fill=tk.BOTH, expand=True)
+
+        tk.Label(text_frame, text="你好，" + self.nickname+ "!\n"+"欢迎使用任务管理系统", font=("华文行楷", 20)).pack()
+        tk.Label(text_frame, text="点击编辑调整你的任务，点击总览查看具体信息").pack()
+
+        today_text_frame = tk.Frame(self.content_area)
+        today_text_frame.pack(fill=tk.BOTH, expand=True)
+
+        self.task_list_frame = Frame(self.content_area, width=100, height=500, bg="white")
+        self.task_list_frame.pack(pady=20)
+        self.task_list = Listbox(self.task_list_frame, width=50, height=20, font=("微软雅黑", 14))
+        self.task_list.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        self.update_today_task()
+
+        if self.num_yellow == 0 and self.num_green == 0:
+            tk.Label(today_text_frame, text="你今天没有认我哦：\n快去点击下方的编辑按钮添加任务吧！", font=("微软雅黑", 14)).pack()
+        elif self.num_yellow == 0:
+            tk.Label(today_text_frame, text="你今天的任务全部完成了哦：\n真棒！", font=("微软雅黑", 14)).pack()
+        elif self.num_green == 0:
+            tk.Label(today_text_frame, text="今日任还没有完成任务哦：\n加油！", font=("微软雅黑", 14)).pack()
+        else:
+            tk.Label(today_text_frame, text="今日你已经完成"+ str(self.num_green)+"个任务\n还有"\
+                                            +str(self.num_yellow)+"个任务未完成：\n加油!", font=("微软雅黑", 14)).pack()
+
+
+    def update_today_task(self):
+        self.task_list.delete(0, END)
+
+        req = Request(Command.GET_ALL, self.uid)
+        tasks = handle(req)
+
+        self.num_yellow = 0
+        self.num_green = 0
+        for mission in tasks:
+            due = datetime.strptime(mission.due, "%Y-%m-%d")  # 返回datetime对象
+            due = due.date()  # 取出datetime里的date部分
+            if due > datetime.now().date():
+                continue
+            elif due < datetime.now().date():
+                break
+            elif mission.complete:
+                status_color = 'green'
+                staus_str = '已完成'
+                self.num_green += 1
+            else:
+                status_color = 'yellow'
+                staus_str = '正在进行'
+                self.num_yellow += 1
+
+            deadline_str = mission.due
+            if staus_str == '已完成':
+                task_str = f"{mission.name} - {staus_str}"
+            else:
+                task_str = f"{mission.name} - {staus_str} (截止: {deadline_str})"
+                print(task_str)
+            self.task_list.insert(END, task_str)
+            self.task_list.itemconfig(END, bg=status_color)
+
+
 
     def bit_to_edit(self):
         print("want from start to edit")
@@ -110,7 +180,7 @@ class RootWindow(tk.Frame): # 开始界面
 
     def sign_in(self): # 登录界面
         self.uid = -1
-        self.nickname = " "
+        self.nickname = "游客朋友"
         pass
 
     def sign_up(self): # 注册界面
