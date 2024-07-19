@@ -15,7 +15,7 @@ class RegistrationWindow:
         self.master = master
         self.master.title('注册')
         self.master.geometry('400x300')  # 设定窗口大小
-        center_window(self.master, 400, 300)  # 居中显示
+        center_window(self.master, 605, 400)  # 居中显示
         self.frame = tk.Frame(self.master)
         self.username_label = tk.Label(self.frame, text="用户名:")
         self.username_label.pack()
@@ -47,20 +47,20 @@ class LoginWindow:
         self.master = master
         self.master.title('登录')
         self.master.geometry('400x250')  # 设定窗口大小
-        center_window(self.master, 400, 250)  # 居中显示
+        center_window(self.master, 605, 400)  # 居中显示
         self.frame = tk.Frame(self.master)
-        self.username_label = tk.Label(self.frame, text="用户名:")
-        self.username_label.pack()
+        self.username_label = tk.Label(self.frame, text="用户名:", font=('华文行楷', 15))
+        self.username_label.pack(pady=5)
         self.username_entry = tk.Entry(self.frame)
         self.username_entry.pack()
 
-        self.password_label = tk.Label(self.frame, text="密码:")
-        self.password_label.pack()
+        self.password_label = tk.Label(self.frame, text="密码:", font=('华文行楷', 15))
+        self.password_label.pack(pady=5)
         self.password_entry = tk.Entry(self.frame, show="*")
         self.password_entry.pack()
 
-        self.login_button = tk.Button(self.frame, text="登录", command=self.login)
-        self.login_button.pack()
+        self.login_button = tk.Button(self.frame, text="***** 登录 *****", command=self.login, font=('华文行楷', 20))
+        self.login_button.pack(pady = 5)
 
         self.frame.pack()
 
@@ -80,9 +80,14 @@ if __name__ == "__main__":
     root = tk.Tk()
     root.title('任务管理器 - 登录/注册')
 
+    # welcome image
+    canvas = tk.Canvas(root, height=157, width=605)
+    image_file = tk.PhotoImage(file='img.png')
+    image = canvas.create_image(0, 0, anchor='nw', image=image_file)
+    canvas.pack(side='top')
+
     # 创建并显示登录窗口
     login_window = LoginWindow(root)
-
 
     # 可选地，你可以创建一个菜单或按钮切换登录和注册
     # 为了简单起见，我们仅在需要时创建单独的注册窗口
@@ -93,7 +98,7 @@ if __name__ == "__main__":
 
 
     # 添加一个按钮从登录窗口打开注册窗口
-    register_button = tk.Button(root, text="注册", command=open_registration_window)
-    register_button.pack()
+    register_button = tk.Button(root, text="***** 注册 *****", command=open_registration_window, font=('华文行楷', 20))
+    register_button.pack(pady = 5)
 
     root.mainloop()
