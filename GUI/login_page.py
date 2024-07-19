@@ -101,4 +101,5 @@ if __name__ == "__main__":
     register_button = tk.Button(root, text="***** 注册 *****", command=open_registration_window, font=('华文行楷', 20))
     register_button.pack(pady = 5)
 
+
     root.mainloop()
