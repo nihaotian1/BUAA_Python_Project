@@ -188,6 +188,4 @@ def open_main_window():
     root.mainloop()
 
 
-open_main_window()
-
 
