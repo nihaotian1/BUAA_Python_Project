@@ -35,23 +35,19 @@ def handle(req : Request):
     elif req.req_type == Command.GET_ALL:
         return m_utils.get_all_mission()     # [missions]
     elif req.req_type == Command.ADD_CATEGORY:
-        ########
-        return 0
-        ########
+        return m_utils.add_category(req.category, req.color, req.uid)
     elif req.req_type == Command.DELETE_CATEGORY:
-        ########
-        return 0
-        ########
+        return m_utils.del_category(req.category, req.uid)
     elif req.req_type == Command.REGISTER_USER:
         return u_utils.register(req.user_name, req.user_password) # str
     elif req.req_type == Command.LOG_IN:
         return u_utils.login(req.user_name, req.user_password)
     elif req.req_type == Command.UDPATE_USER_INFO:
-        ########
-        return 0
-        ########
+        return u_utils.udpate_user(req.uid, req.user_name, req.user_password)
     elif req.req_type == Command.GET_TODAY_MISSION:
         return m_utils.get_today_mission(req.uid)
     elif req.req_type == Command.GET_CATEGORY_MISSION:
         return m_utils.get_category(req.category, req.uid)
+    elif req.req_type == Command.GET_CATEGORY_COLOR:
+        return m_utils.get_category_color(req.category, req.uid)
     raise Exception('Unknown request type')

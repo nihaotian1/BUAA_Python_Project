@@ -37,7 +37,7 @@ def create_mission(mission, uid=-1):
     if uid == -1 and config.config.version != 0.5:
         raise Exception('Unknown UserId!')
 
-    db.add_task(uid, mission.name, mission.description, mission.due, mission.duration,mission.type,
+    db.add_task(uid, mission.name, mission.description, mission.due, mission.duration, mission.type,
                 mission.weight, mission.isdaily)
 
     return 0 # 0 on success
@@ -69,7 +69,7 @@ def get_today_mission(uid=-1):
     today = datetime.now().strftime("%Y-%m-%d")
     tasks = db.find_tasks_by_due_date(today, uid)
 
-    tasks = sorted(tasks, key=lambda x : x.weight, reverse=True)
+    tasks = sorted(tasks, key=lambda x : x.weight, reverse=True) # sort by WEIGHT
 
     return tasks
 
@@ -84,7 +84,29 @@ def get_category(category, uid=-1):
     return tasks
 
 
-def add_category(category, uid=-1):
+def add_category(category, color, uid=-1):
     if uid == -1 and config.config.version != 0.5:
         raise Exception('Unknown UserId!')
 
+    db.add_type_color_mapping(uid, category, color)
+    return 0
+
+
+def del_category(category, uid=-1):
+    if uid == -1 and config.config.version != 0.5:
+        raise Exception('Unknown UserId!')
+
+    db.remove_type_color_mapping(uid, category)
+    return 0
+
+
+def get_category_color(category, uid=-1):
+    if uid == -1 and config.config.version != 0.5:
+        raise Exception('Unknown UserId!')
+
+    color = db.get_type_color_mapping(uid, category)
+
+    if color is None:
+        return "#000000"
+    else:
+        return color

@@ -232,6 +232,7 @@ def update_task(task_id, name=None,description=None, due_date=None, duration=Non
             c.execute(query, params)
             conn.commit()
 
+
 def get_task_by_id(task_id):
     """根据ID获取任务的详细信息。如果任务存在，返回Mission对象；否则返回None。"""
     with connect_db() as conn:
@@ -375,6 +376,8 @@ def clear_user_data(user_id):
         c = conn.cursor()
         c.execute("DELETE FROM tasks WHERE uid = ?", (user_id,))
 
+
+
 '''
     以下是关于类型颜色键值对的数据库操作，依次为增加，删除，查询对应颜色，更新颜色，查询是否存在对应关系
     字段说明：user_id:int
@@ -386,11 +389,13 @@ def add_type_color_mapping(user_id, type, color):
         c.execute("INSERT INTO user_type_color (user_id, type, color) VALUES (?, ?, ?)", (user_id, type, color))
         conn.commit()
 
+
 def remove_type_color_mapping(user_id, type):
     with connect_db() as conn:
         c = conn.cursor()
         c.execute("DELETE FROM user_type_color WHERE user_id = ? AND type = ?", (user_id, type))
         conn.commit()
+
 
 def get_type_color_mapping(user_id, type):
     with connect_db() as conn:
@@ -399,11 +404,13 @@ def get_type_color_mapping(user_id, type):
         result = c.fetchone()
         return result[0] if result else None
 
+
 def update_type_color_mapping(user_id, type, new_color):
     with connect_db() as conn:
         c = conn.cursor()
         c.execute("UPDATE user_type_color SET color = ? WHERE user_id = ? AND type = ?", (new_color, user_id, type))
         conn.commit()
+
 
 def type_color_mapping_exists(user_id, type):
     with connect_db() as conn:
