@@ -21,7 +21,6 @@ def init_db():
                  id INTEGER PRIMARY KEY AUTOINCREMENT,
                  uid INTEGER NOT NULL,
                  name TEXT NOT NULL,
-                 description TEXT NOT NULL,
                  due_date TEXT NOT NULL,
                  duration INTEGER DEFAULT 1,
                  type TEXT DEFAULT 'default',
@@ -141,12 +140,12 @@ def get_user_info(username):
 '''
 
 
-def add_task(user_id, name, description, due_date, duration=1, task_type='default', weight=1.0, is_daily=False):
+def add_task(user_id, name, due_date, duration=1, task_type='default', weight=1.0, is_daily=False):
     with connect_db() as conn:
         c = conn.cursor()
-        c.execute("INSERT INTO tasks (uid, name,description, due_date, duration, type, weight, is_daily) "
+        c.execute("INSERT INTO tasks (uid, name, due_date, duration, type, weight, is_daily) "
                   "VALUES (?, ?, ?, ?, ?, ?, ?)",
-                  (user_id, name,description , due_date, duration, task_type, weight, int(is_daily)))
+                  (user_id, name, due_date, duration, task_type, weight, int(is_daily)))
         conn.commit()
 
 
@@ -180,18 +179,14 @@ def delete_task(task_id):
 
 
 # 在 db_handler.py 中
-def update_task(task_id, name=None, description=None, due_date=None, duration=None, task_type=None,
+def update_task(task_id, name=None, due_date=None, duration=None, task_type=None,
                 weight=None, is_daily=None, complete=None):
     updates = []
     params = []
     if name is not None:
         updates.append("name = ?")
         params.append(name)
-
-    if name is not None:
-        updates.append("description = ?")
-        params.append(description)
-
+        
     if due_date is not None:
         updates.append("due_date = ?")
         params.append(due_date)
@@ -379,7 +374,6 @@ def mission_from_row(row):
     return Mission(
         row[1],  # uid
         row[2],  # name
-        row[3],  # description
         row[3],  # due_date
         row[0],  # mid
         row[4],  # duration
