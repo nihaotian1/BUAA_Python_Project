@@ -3,12 +3,14 @@ from tkinter import messagebox
 from GUI.main_window import open_main_window
 from database.db_handler import register_user, get_user_info
 
+
 def center_window(window, width, height):
     screen_width = window.winfo_screenwidth()
     screen_height = window.winfo_screenheight()
     x = (screen_width - width) // 2
     y = (screen_height - height) // 2
     window.geometry(f'{width}x{height}+{x}+{y}')
+
 
 class RegistrationWindow:
     def __init__(self, master):
@@ -76,11 +78,11 @@ class LoginWindow:
             messagebox.showerror("错误", "无效的用户名或密码。")
 
 
-if __name__ == "__main__":
+def login_page():
     root = tk.Tk()
     root.title('任务管理器 - 登录/注册')
 
-    # welcome image
+    # welcome_image
     canvas = tk.Canvas(root, height=157, width=605)
     image_file = tk.PhotoImage(file='img.png')
     image = canvas.create_image(0, 0, anchor='nw', image=image_file)
@@ -96,10 +98,10 @@ if __name__ == "__main__":
         registration_window.title('任务管理器 - 注册')
         RegistrationWindow(registration_window)
 
-
     # 添加一个按钮从登录窗口打开注册窗口
     register_button = tk.Button(root, text="***** 注册 *****", command=open_registration_window, font=('华文行楷', 20))
-    register_button.pack(pady = 5)
-
+    register_button.pack(pady=5)
 
     root.mainloop()
+
+
