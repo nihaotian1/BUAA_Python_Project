@@ -21,6 +21,7 @@ def init_db():
                  id INTEGER PRIMARY KEY AUTOINCREMENT,
                  uid INTEGER NOT NULL,
                  name TEXT NOT NULL,
+                 description TEXT NOT NULL,
                  due_date TEXT NOT NULL,
                  duration INTEGER DEFAULT 1,
                  type TEXT DEFAULT 'default',
@@ -28,6 +29,13 @@ def init_db():
                  is_daily INTEGER DEFAULT 0,
                  complete INTEGER DEFAULT 0,
                  FOREIGN KEY(uid) REFERENCES users(id))''')
+
+    c.execute('''CREATE TABLE IF NOT EXISTS user_type_color (
+                     id INTEGER PRIMARY KEY AUTOINCREMENT,
+                     user_id INTEGER NOT NULL,
+                     type TEXT NOT NULL,
+                     color TEXT NOT NULL,
+                     FOREIGN KEY(user_id) REFERENCES users(id))''')
 
     # 提交事务并关闭连接
     conn.commit()
@@ -140,12 +148,12 @@ def get_user_info(username):
 '''
 
 
-def add_task(user_id, name, due_date, duration=1, task_type='default', weight=1.0, is_daily=False):
+def add_task(user_id, name,description, due_date, duration=1, task_type='default', weight=1.0, is_daily=False):
     with connect_db() as conn:
         c = conn.cursor()
-        c.execute("INSERT INTO tasks (uid, name, due_date, duration, type, weight, is_daily) "
+        c.execute("INSERT INTO tasks (uid, name,description, due_date, duration, type, weight, is_daily) "
                   "VALUES (?, ?, ?, ?, ?, ?, ?)",
-                  (user_id, name, due_date, duration, task_type, weight, int(is_daily)))
+                  (user_id, name,description , due_date, duration, task_type, weight, int(is_daily)))
         conn.commit()
 
 
@@ -179,14 +187,18 @@ def delete_task(task_id):
 
 
 # 在 db_handler.py 中
-def update_task(task_id, name=None, due_date=None, duration=None, task_type=None,
+def update_task(task_id, name=None,description=None, due_date=None, duration=None, task_type=None,
                 weight=None, is_daily=None, complete=None):
     updates = []
     params = []
     if name is not None:
         updates.append("name = ?")
         params.append(name)
-        
+
+    if name is not None:
+        updates.append("description = ?")
+        params.append(description)
+
     if due_date is not None:
         updates.append("due_date = ?")
         params.append(due_date)
@@ -219,6 +231,7 @@ def update_task(task_id, name=None, due_date=None, duration=None, task_type=None
             c = conn.cursor()
             c.execute(query, params)
             conn.commit()
+
 
 def get_task_by_id(task_id):
     """根据ID获取任务的详细信息。如果任务存在，返回Mission对象；否则返回None。"""
@@ -364,6 +377,48 @@ def clear_user_data(user_id):
         c.execute("DELETE FROM tasks WHERE uid = ?", (user_id,))
 
 
+
+'''
+    以下是关于类型颜色键值对的数据库操作，依次为增加，删除，查询对应颜色，更新颜色，查询是否存在对应关系
+    字段说明：user_id:int
+            type、color：str
+'''
+def add_type_color_mapping(user_id, type, color):
+    with connect_db() as conn:
+        c = conn.cursor()
+        c.execute("INSERT INTO user_type_color (user_id, type, color) VALUES (?, ?, ?)", (user_id, type, color))
+        conn.commit()
+
+
+def remove_type_color_mapping(user_id, type):
+    with connect_db() as conn:
+        c = conn.cursor()
+        c.execute("DELETE FROM user_type_color WHERE user_id = ? AND type = ?", (user_id, type))
+        conn.commit()
+
+
+def get_type_color_mapping(user_id, type):
+    with connect_db() as conn:
+        c = conn.cursor()
+        c.execute("SELECT color FROM user_type_color WHERE user_id = ? AND type = ?", (user_id, type))
+        result = c.fetchone()
+        return result[0] if result else None
+
+
+def update_type_color_mapping(user_id, type, new_color):
+    with connect_db() as conn:
+        c = conn.cursor()
+        c.execute("UPDATE user_type_color SET color = ? WHERE user_id = ? AND type = ?", (new_color, user_id, type))
+        conn.commit()
+
+
+def type_color_mapping_exists(user_id, type):
+    with connect_db() as conn:
+        c = conn.cursor()
+        c.execute("SELECT COUNT(*) FROM user_type_color WHERE user_id = ? AND type = ?", (user_id, type))
+        result = c.fetchone()[0]
+        return result > 0
+
 '''
     内部自用小函数，莫管
     用来转化输出类型
@@ -374,6 +429,7 @@ def mission_from_row(row):
     return Mission(
         row[1],  # uid
         row[2],  # name
+        row[3],  # description
         row[3],  # due_date
         row[0],  # mid
         row[4],  # duration
