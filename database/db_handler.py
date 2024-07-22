@@ -152,7 +152,7 @@ def add_task(user_id, name,description, due_date, duration=1, task_type='default
     with connect_db() as conn:
         c = conn.cursor()
         c.execute("INSERT INTO tasks (uid, name,description, due_date, duration, type, weight, is_daily) "
-                  "VALUES (?, ?, ?, ?, ?, ?, ?)",
+                  "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
                   (user_id, name,description , due_date, duration, task_type, weight, int(is_daily)))
         conn.commit()
 

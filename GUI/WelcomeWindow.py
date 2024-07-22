@@ -138,8 +138,11 @@ class RootWindow(tk.Frame): # 开始界面
         self.num_yellow = 0
         self.num_green = 0
         for mission in tasks:
-            due = datetime.strptime(mission.due, "%Y-%m-%d")  # 返回datetime对象
-            due = due.date()  # 取出datetime里的date部分
+            try:
+             due = datetime.strptime(mission.due, "%Y-%m-%d")  # 返回datetime对象
+             due = due.date()  # 取出datetime里的date部分
+            except:
+                continue
             if due > datetime.now().date():
                 continue
             elif due < datetime.now().date():
