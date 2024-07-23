@@ -9,15 +9,16 @@ from GUI.SequenceDiagram import createEditWindowAndReturn
 
 
 
+
 class RootWindow(tk.Frame): # 开始界面
-    def __init__(self, root,app=None):
+    def __init__(self, root=None,app=None,uid= None,nickname=None):
         if app is None: # 第一次打开界面，需要初始化
-            self.uid = -1
-            self.nickname = "游客"
+            self.uid = uid
+            self.nickname = nickname
             if(self.uid == -1):
                 self.sign_in()
             self.root = root
-            self.root.title("Welcome to Mission Planner" + self.nickname)
+            self.root.title("Welcome to Mission Planner" + str(self.nickname))
             self.root.geometry("1200x720+150+0")  # 扩大视图界面
 
             # 创建UI框架
@@ -106,7 +107,7 @@ class RootWindow(tk.Frame): # 开始界面
         text_frame = tk.Frame(self.content_area)
         text_frame.pack(fill=tk.BOTH, expand=True)
 
-        tk.Label(text_frame, text="你好，" + self.nickname+ "!\n"+"欢迎使用任务管理系统", font=("华文行楷", 20)).pack()
+        tk.Label(text_frame, text="你好，" + str(self.nickname)+ "!\n"+"欢迎使用任务管理系统", font=("华文行楷", 20)).pack()
         tk.Label(text_frame, text="点击编辑调整你的任务，点击总览查看具体信息").pack()
 
         today_text_frame = tk.Frame(self.content_area)
@@ -186,6 +187,7 @@ class RootWindow(tk.Frame): # 开始界面
         self.nickname = "游客朋友"
         pass
 
+
     def sign_up(self): # 注册界面
         pass
 
@@ -196,14 +198,14 @@ class RootWindow(tk.Frame): # 开始界面
         self.content_area.destroy()
 
 
-def openWelcomeWindow(app=None):
+def openWelcomeWindow(app=None,uid = None, nickname = None):
     init_db()  # 初始化数据库
     if app:
-        newAPP = RootWindow(app.root,app)
+        newAPP = RootWindow(root=app.root,app=app)
         app.root.mainloop()
     else: # 第一次打开界面
         root = tk.Tk()
-        newAPP = RootWindow(root)
+        newAPP = RootWindow(root=root,uid=uid,nickname=nickname)
         root.mainloop()
 
 
