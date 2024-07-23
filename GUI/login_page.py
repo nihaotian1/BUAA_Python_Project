@@ -73,7 +73,7 @@ class LoginWindow:
         if user_info and user_info[2] == password:
             messagebox.showinfo("成功", "登录成功！")
             self.master.destroy()  # 关闭登录窗口
-            open_main_window()
+            # open_main_window()
         else:
             messagebox.showerror("错误", "无效的用户名或密码。")
 
