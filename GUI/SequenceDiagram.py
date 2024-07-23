@@ -54,9 +54,13 @@ class TaskManagerApp(Frame): # 顺序图界面 也是编辑界面
         button_frame = Frame(self.task_list_frame,width=100,height=50,bg="Cyan")
         button_frame.grid(row =0, column =0, padx=0, pady=0)
         self.remove_button = Button(button_frame, text="删除所选任务", command=self.remove_task, bg="red")
+        self.change_task_button = Button(button_frame, text="修改所选任务", command=self.change_task, bg="orange")
+        self.details_button = Button(button_frame, text="所选任务详情", command=self.show_task_details, bg="gray")
         self.complete_button = Button(button_frame, text="完成所选任务", command=self.complete_task, bg="green")
         self.remove_button.grid(row=0, column=0, padx=0, pady=5)
-        self.complete_button.grid(row=0, column=1, padx=1, pady=5)
+        self.change_task_button.grid(row=0, column=1, padx=1, pady=5)
+        self.details_button.grid(row=0, column=2, padx=1, pady=5)
+        self.complete_button.grid(row=0, column=3, padx=1, pady=5)
 
         self.task_listbox = Listbox(self.task_list_frame, width=100, height=30, font=("Arial", 14), bg="Cyan")
         self.task_listbox.grid(row=1, column=0, padx=0, pady=0)
@@ -72,7 +76,7 @@ class TaskManagerApp(Frame): # 顺序图界面 也是编辑界面
         # 初始化任务列表
         self.update_task_list()
 
-    def setup_add_Frame(self):
+    def setup_add_Frame(self): # 这是添加任务界面
         self.AddFrame = Frame(self.content_area, width=100, height=500, bg="LightSteelBlue")
         self.AddFrame.place(relx=0, rely=0)
 
@@ -111,7 +115,7 @@ class TaskManagerApp(Frame): # 顺序图界面 也是编辑界面
         self.AddFrame.place_forget()  # 隐藏输入框直到用户点击ADD按钮
 
 
-    def create_add_more_menu(self):
+    def create_add_more_menu(self,change_v1 = None,change_v2 = None,change_v3 = None):
         def change_duration(l1,v1):
             l1["text"] = f"{v1}小时"
             self.duration_value = v1
@@ -148,13 +152,26 @@ class TaskManagerApp(Frame): # 顺序图界面 也是编辑界面
         daily_menu = tk.Menu(add_menu, tearoff=0)
         add_menu.add_cascade(label="日常", menu=daily_menu)
 
-        l1 = Label(top_add_more, text="0小时")
+        label_Frame = Frame(top_add_more, width=100, height=50, bg="LightSteelBlue") # 权重等信息标签框架
+        label_Frame.pack(pady=20)
+        extend_Frame = Frame(top_add_more, width=100, height=50, bg="LightSteelBlue") # #方便扩展，在添加界面不使用。在修改的时候使用。
+
+        l1 = Label(label_Frame, text="0小时")
         l1.grid(row=0, column=0, padx=10, pady=5)
-        l2 = Label(top_add_more, text="无")
+        l2 = Label(label_Frame, text="无")
         l2.grid(row=0, column=1, padx=15, pady=5)
-        l3 = Label(top_add_more, text="否")
+        l3 = Label(label_Frame, text="否")
         l3.grid(row=0, column=2, padx=10, pady=5)
-        Button(top_add_more, text="确定", command=lambda: on_cancel(),bg = "yellow").grid(row = 0, column = 3, padx=10, pady=5)
+
+
+
+        if change_v1 != None and change_v2  != None and change_v3 != None: #如果是修改任务，那么显示原来的权重
+            change_duration(l1,change_v1)
+            change_weight(l2,change_v2)
+            change_daily(l3,change_v3)
+        else:
+            Button(label_Frame, text="确定", command=lambda: on_cancel(),bg = "yellow").\
+                grid(row = 0, column = 3, padx=10, pady=5)
 
         for i in range(25):
             time_nume_menu.add_command(label=f"{i}小时", command=lambda v=i: change_duration(l1,v))
@@ -167,6 +184,8 @@ class TaskManagerApp(Frame): # 顺序图界面 也是编辑界面
         daily_menu.add_command(label="是", command=lambda v=1: change_daily(l3,v))
 
         top_add_more["menu"] = add_menu
+
+        return top_add_more , extend_Frame
 
     def openADDFrame(self):  # 打开添加任务界面（点击ADD）
         self.duration_value = 0
@@ -214,6 +233,13 @@ class TaskManagerApp(Frame): # 顺序图界面 也是编辑界面
         # 关闭添加任务界面
         self.closeADDFrame()
 
+    def find_mission_index(self): #返回列表里鼠标坐在位置的mission
+        selected_index = self.task_listbox.curselection()
+        if selected_index:
+            index = selected_index[0]  # 这个能返回鼠标点击的行号
+            return self.tasks[index]
+        return None
+
     def complete_task(self):
         top = tk.Toplevel()
         top.title("完成任务确认")
@@ -234,10 +260,8 @@ class TaskManagerApp(Frame): # 顺序图界面 也是编辑界面
         # 确认按钮
         def on_confirm():
             # 执行指令
-            selected_index = self.task_listbox.curselection()
-            if selected_index:
-                index = selected_index[0]  # 这个能返回鼠标点击的行号
-                mession = self.tasks[index]
+            mession = self.find_mission_index()
+            if mession:
                 mession.complete = True
                 req = Request(Command.MODIFY, self.uid, mession)
                 # 更新后端数据
@@ -248,6 +272,110 @@ class TaskManagerApp(Frame): # 顺序图界面 也是编辑界面
 
         confirm_button = tk.Button(top, text="完成啦！", command=on_confirm,bg = "green")
         confirm_button.pack(side=tk.RIGHT, padx=10, pady=10)
+
+
+
+    def show_task_details(self):
+        mission = self.find_mission_index()
+        top = tk.Toplevel()
+        top.title("任务详情")
+        top.geometry("300x300+630+300")
+
+
+        def on_cancel():
+            # 弹窗关闭
+            top.destroy()
+
+        Label(top,text="任务名称:"+mission.name,font=("宋体", 14)).pack(pady=8)
+        Label(top,text="截止日期:"+mission.due,font=("宋体", 14)).pack(pady=8)
+        Label(top,text="持续时间:"+str(mission.duration)+"小时",font=("宋体", 14)).pack(pady=8)
+        weight_str = "无"
+        if mission.weight == 1:
+            weight_str = "低"
+        elif mission.weight == 2:
+            weight_str = "中"
+        elif mission.weight == 3:
+            weight_str = "高"
+        Label(top,text="权重:"+weight_str,font=("宋体", 14)).pack(pady=8)
+        isdaily_str = "否"
+        if mission.isdaily:
+            isdaily_str = "是"
+        Label(top,text="日常:"+isdaily_str,font=("宋体", 14)).pack(pady=8)
+        Label(top,text="任务描述:",font=("宋体", 14)).pack(pady=8)
+        Label(top,text=mission.description,font=("宋体", 14)).pack(pady=8)
+        Button(top, text="知道了", command=on_cancel,bg = "yellow").pack(pady=8)
+
+
+
+    def change_task(self):
+        mission = self.find_mission_index()
+        top = None
+        extend_frame = None
+        if mission:
+            # 弹出修改任务界面
+            top, extend_frame= self.create_add_more_menu(change_v1=mission.duration,change_v2=mission.weight,change_v3=mission.isdaily)
+            top.title("修改任务")
+            top.geometry("500x500+530+100")
+        else:
+            print("未选择任务")
+
+        def on_cancel():
+            # 弹窗关闭
+            top.destroy()
+        extend_frame.pack(pady=10)
+
+        def remove_and_add_task():
+            # 先删除原来的任务
+            req = Request(Command.DELETE, self.uid, mission)
+            # 删除后端数据
+            handle(req)
+            self.update_task_list()
+            # 再添加修改后的任务
+            change_task_name = self.change_name_entry.get().strip()
+            change_deadline_str = self.change_deadline_entry.get().strip()
+            change_deadline = None
+            if change_deadline_str:
+                try:
+                    change_deadline = datetime.strptime(change_deadline_str, "%Y-%m-%d") # "%Y-%m-%d %H:%M:%S.%f"
+                    change_deadline = change_deadline.date()
+                except ValueError:
+                    print("截止日期格式错误，应为 YYYY-MM-DD")
+                    return
+            else:
+                change_deadline = datetime.now().date()
+            change_description = self.change_description_entry.get("1.0", "end-1c").strip()
+            change_type = self.change_type_entry.get().strip()
+            change_mission = Mission(uid=self.uid,name=change_task_name,duration=self.duration_value,due=change_deadline,\
+                             weight=self.weight_value,is_daily=self.daily_value,description=change_description,type=change_type)
+            req = Request(Command.CREATE, self.uid, change_mission)
+            # 添加后端数据
+            handle(req)
+            self.update_task_list()
+            # 弹窗关闭
+            top.destroy()
+
+        Label(extend_frame,text="修改前",font=("宋体", 16)).grid(row=0, column=0, padx=10, pady=5)
+        Label(extend_frame,text="修改为",font=("宋体", 16)).grid(row=0, column=1, padx=10, pady=5)
+        Label(extend_frame,text="任务名称:"+mission.name,font=("宋体", 14)).grid(row=1, column=0, padx=10, pady=5)
+        self.change_name_entry = Entry(extend_frame, width=20)
+        self.change_name_entry.grid(row=1, column=1, padx=10, pady=5)
+        self.change_name_entry.insert(0, mission.name)
+        Label(extend_frame,text="截止日期:"+mission.due,font=("宋体", 14)).grid(row=2, column=0, padx=10, pady=5)
+        self.change_deadline_entry = Entry(extend_frame, width=20)
+        self.change_deadline_entry.grid(row=2, column=1, padx=10, pady=5)
+        self.change_deadline_entry.insert(0, mission.due)
+        Label(extend_frame,text="任务描述:",font=("宋体", 14)).grid(row=3, column=0, padx=10, pady=5)
+        self.change_description_entry = tk.Text(extend_frame, width=20, height=5)
+        self.change_description_entry.grid(row=3, column=1, padx=10, pady=5)
+        self.change_description_entry.insert(1.0, mission.description)
+        Label(extend_frame,text="任务类型:",font=("宋体", 14)).grid(row=4, column=0, padx=10, pady=5)
+        self.change_type_entry = Entry(extend_frame, width=20)
+        self.change_type_entry.grid(row=4, column=1, padx=10, pady=5)
+        self.change_type_entry.insert(0, mission.type)
+        Button(extend_frame, text="确定修改", command=remove_and_add_task,bg = "yellow").\
+            grid(row = 8, column = 0, padx=10, pady=5)
+
+
 
 
     def remove_task(self):
@@ -270,10 +398,8 @@ class TaskManagerApp(Frame): # 顺序图界面 也是编辑界面
         # 确认按钮
         def on_confirm():
             # 执行指令
-            selected_index = self.task_listbox.curselection()
-            if selected_index:
-                index = selected_index[0]  # 这个能返回鼠标点击的行号
-                mession = self.tasks.pop(index)
+            mession = self.find_mission_index()
+            if mession:
                 req = Request(Command.DELETE, self.uid, mession)
                 # 删除后端数据
                 handle(req)
@@ -299,15 +425,6 @@ class TaskManagerApp(Frame): # 顺序图界面 也是编辑界面
         status_color = 'lightgrey'
         staus_str = '未完成'
         for mission in self.tasks:
-            print(mission.name)
-            print(mission.due)
-            print(mission.complete)
-            print(mission.uid)
-            print(mission.duration)
-            print(mission.description)
-            print(mission.weight)
-            print(mission.isdaily)
-            print(mission.type)
             try:
                 if(mission.complete == False):
                     due = datetime.strptime(mission.due, "%Y-%m-%d") # 返回datetime对象

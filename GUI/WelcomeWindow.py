@@ -61,6 +61,7 @@ class RootWindow(tk.Frame): # 开始界面
 
 
 
+
     def setup_side_buttom(self):
         # 设置窗口大小
         self.root.winfo_screenwidth()
@@ -161,7 +162,6 @@ class RootWindow(tk.Frame): # 开始界面
                 task_str = f"{mission.name} - {staus_str}"
             else:
                 task_str = f"{mission.name} - {staus_str} (截止: {deadline_str})"
-                print(task_str)
             self.task_list.insert(END, task_str)
             self.task_list.itemconfig(END, bg=status_color)
 
