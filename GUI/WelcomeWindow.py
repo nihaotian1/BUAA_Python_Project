@@ -61,6 +61,7 @@ class RootWindow(tk.Frame): # 开始界面
 
 
 
+
     def setup_side_buttom(self):
         # 设置窗口大小
         self.root.winfo_screenwidth()
@@ -138,8 +139,11 @@ class RootWindow(tk.Frame): # 开始界面
         self.num_yellow = 0
         self.num_green = 0
         for mission in tasks:
-            due = datetime.strptime(mission.due, "%Y-%m-%d")  # 返回datetime对象
-            due = due.date()  # 取出datetime里的date部分
+            try:
+             due = datetime.strptime(mission.due, "%Y-%m-%d")  # 返回datetime对象
+             due = due.date()  # 取出datetime里的date部分
+            except:
+                continue
             if due > datetime.now().date():
                 continue
             elif due < datetime.now().date():
@@ -158,7 +162,6 @@ class RootWindow(tk.Frame): # 开始界面
                 task_str = f"{mission.name} - {staus_str}"
             else:
                 task_str = f"{mission.name} - {staus_str} (截止: {deadline_str})"
-                print(task_str)
             self.task_list.insert(END, task_str)
             self.task_list.itemconfig(END, bg=status_color)
 

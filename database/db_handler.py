@@ -148,12 +148,12 @@ def get_user_info(username):
 '''
 
 
-def add_task(user_id, name,description, due_date, duration=1, task_type='default', weight=1.0, is_daily=False):
+def add_task(user_id, name, description, due_date, duration=1, task_type='default', weight=1.0, is_daily=False):
     with connect_db() as conn:
         c = conn.cursor()
-        c.execute("INSERT INTO tasks (uid, name,description, due_date, duration, type, weight, is_daily) "
-                  "VALUES (?, ?, ?, ?, ?, ?, ?)",
-                  (user_id, name,description , due_date, duration, task_type, weight, int(is_daily)))
+        c.execute("INSERT INTO tasks (uid, name, description, due_date, duration, type, weight, is_daily) "
+                  "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                  (user_id, name, description , due_date, duration, task_type, weight, int(is_daily)))
         conn.commit()
 
 
@@ -195,7 +195,7 @@ def update_task(task_id, name=None,description=None, due_date=None, duration=Non
         updates.append("name = ?")
         params.append(name)
 
-    if name is not None:
+    if description is not None:
         updates.append("description = ?")
         params.append(description)
 
@@ -429,12 +429,12 @@ def mission_from_row(row):
     return Mission(
         row[1],  # uid
         row[2],  # name
+        row[4],  # due_date
         row[3],  # description
-        row[3],  # due_date
         row[0],  # mid
-        row[4],  # duration
-        row[5],  # type
-        row[6],  # weight
-        bool(row[7]),  # is_daily
-        bool(row[8])  # complete
+        row[5],  # duration
+        row[6],  # type
+        row[7],  # weight
+        bool(row[8]),  # is_daily
+        bool(row[9])  # complete
     )
