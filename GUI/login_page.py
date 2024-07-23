@@ -84,7 +84,7 @@ def login_page():
 
     # welcome_image
     canvas = tk.Canvas(root, height=157, width=605)
-    image_file = tk.PhotoImage(file='img.png')
+    image_file = tk.PhotoImage(file='登录页面欢迎图片.png')
     image = canvas.create_image(0, 0, anchor='nw', image=image_file)
     canvas.pack(side='top')
 
@@ -105,3 +105,4 @@ def login_page():
     root.mainloop()
 
 
+login_page()
