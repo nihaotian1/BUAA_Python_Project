@@ -185,8 +185,9 @@ class RootWindow(tk.Frame): # 开始界面
 
     def bit_to_main(self):
         print("want from start to main")
-        # self.close_app()
-        # main_window.open_main_window()
+        from GUI.main_window import createMainWindowAndReturn
+        createMainWindowAndReturn(self)
+        print("sussess to main")
 
     def sign_in(self): # 登录界面
         self.uid = -1
