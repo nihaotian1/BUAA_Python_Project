@@ -185,7 +185,8 @@ class TaskDisplayApp:
 
         tasks_uncategorized = ["任务甲", "任务乙", "任务丙"]
         uncategorized_button = tk.Button(self.categories_frame, text="未分类", font=('华文行楷', 15),
-                                         command=lambda: show_calendar(tasks_uncategorized, uncategorized_button), bg="white")
+                                         command=lambda: show_calendar(tasks_uncategorized, uncategorized_button),
+                                         bg="white")
         uncategorized_button.grid(row=row_index, column=0, sticky="ew")
         row_index += 1
 
@@ -222,7 +223,8 @@ class TaskDisplayApp:
 
         tasks_intemperance = ["任务甲", "任务乙", "任务丙"]
         intemperance_button = tk.Button(self.categories_frame, text="放纵", font=('华文行楷', 15),
-                                        command=lambda: show_calendar(tasks_intemperance, intemperance_button), bg="white")
+                                        command=lambda: show_calendar(tasks_intemperance, intemperance_button),
+                                        bg="white")
         intemperance_button.grid(row=row_index, column=0, sticky="ew")
 
         # 最初隐藏类别按钮
