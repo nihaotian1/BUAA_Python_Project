@@ -25,15 +25,15 @@ import ctrl.user_uitls as u_utils
 def handle(req : Request):
     # Mission Related
     if req.req_type == Command.CREATE:
-        return m_utils.create_mission(req.mission) # 0
+        return m_utils.create_mission(req.mission, req.uid) # 0
     elif req.req_type == Command.MODIFY:
-        return m_utils.modify_mission(req.mission) # 0
+        return m_utils.modify_mission(req.mission, req.uid) # 0
     elif req.req_type == Command.DELETE:
-        return m_utils.delete_mission(req.mission) # 0
+        return m_utils.delete_mission(req.mission, req.uid) # 0
     elif req.req_type == Command.GET_EXPIRED:
-        return m_utils.get_expired_mission() # [missions]
+        return m_utils.get_expired_mission(req.uid) # [missions]
     elif req.req_type == Command.GET_ALL:
-        return m_utils.get_all_mission()     # [missions]
+        return m_utils.get_all_mission(req.uid)     # [missions]
     elif req.req_type == Command.ADD_CATEGORY:
         return m_utils.add_category(req.category, req.color, req.uid)
     elif req.req_type == Command.DELETE_CATEGORY:
