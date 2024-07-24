@@ -140,7 +140,7 @@ class RootWindow(tk.Frame): # 开始界面
     def update_today_task(self):
         self.task_list.delete(0, END)
 
-        req = Request(Command.GET_ALL, self.uid)
+        req = Request(req_type=Command.GET_ALL, uid=self.uid)
         tasks = handle(req)
 
         self.num_yellow = 0
@@ -226,4 +226,4 @@ def openWelcomeWindow(app=None,uid = None, nickname = None):
 
 
 if __name__ == '__main__':
-    openWelcomeWindow(uid=-1,nickname="游客朋友")
+    openWelcomeWindow(uid=-1,nickname="管理员")

@@ -266,7 +266,7 @@ class TaskManagerApp(Frame): # 顺序图界面 也是编辑界面
             mession = self.find_mission_index()
             if mession:
                 mession.complete = True
-                req = Request(Command.MODIFY, self.uid, mession)
+                req = Request(req_type=Command.MODIFY, uid=self.uid, mission=mession)
                 # 更新后端数据
                 handle(req)
                 self.update_task_list()
@@ -329,7 +329,7 @@ class TaskManagerApp(Frame): # 顺序图界面 也是编辑界面
 
         def remove_and_add_task():
             # 先删除原来的任务
-            req = Request(Command.DELETE, self.uid, mission)
+            req = Request(req_type=Command.DELETE, uid=self.uid, mission=mission)
             # 删除后端数据
             handle(req)
             self.update_task_list()
@@ -350,7 +350,7 @@ class TaskManagerApp(Frame): # 顺序图界面 也是编辑界面
             change_type = self.change_type_entry.get().strip()
             change_mission = Mission(uid=self.uid,name=change_task_name,duration=self.duration_value,due=change_deadline,\
                              weight=self.weight_value,is_daily=self.daily_value,description=change_description,type=change_type)
-            req = Request(Command.CREATE, self.uid, change_mission)
+            req = Request(req_type=Command.CREATE, uid=self.uid, mission=change_mission)
             # 添加后端数据
             handle(req)
             self.update_task_list()
@@ -403,7 +403,7 @@ class TaskManagerApp(Frame): # 顺序图界面 也是编辑界面
             # 执行指令
             mession = self.find_mission_index()
             if mession:
-                req = Request(Command.DELETE, self.uid, mession)
+                req = Request(req_type=Command.DELETE, uid=self.uid, mission=mession)
                 # 删除后端数据
                 handle(req)
                 self.update_task_list()
@@ -419,7 +419,7 @@ class TaskManagerApp(Frame): # 顺序图界面 也是编辑界面
         print("更新任务状态功能暂未实现完整GUI界面，请通过控制台操作。")
 
     def getAllTasks(self): # 更新tasks
-        req = Request(Command.GET_ALL,self.uid)
+        req = Request(req_type=Command.GET_ALL,uid=self.uid)
         self.tasks = handle(req)
 
     def update_task_list(self): # 更新任务列表，调用上面那个函数

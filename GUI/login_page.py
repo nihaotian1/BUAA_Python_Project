@@ -69,15 +69,9 @@ class LoginWindow:
 
         self.login_button = tk.Button(self.frame, text="***** 登录 *****", command=self.login, font=('华文行楷', 20))
         self.login_button.pack(pady = 5)
-        self.tourist_button = tk.Button(self.frame, text="***游客模式***", command=self.tourist_login, font=('华文行楷', 20))
-        self.tourist_button.pack(pady=5)
 
         self.frame.pack()
 
-
-    def tourist_login(self):
-        self.master.destroy()  # 关闭登录窗口
-        openWelcomeWindow(uid= -1, nickname= "游客朋友")
 
     def login(self):
         username = self.username_entry.get()
