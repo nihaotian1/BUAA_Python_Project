@@ -22,7 +22,7 @@ def login(user_name, user_password):
     if res[2] != user_password:
         return "Wrong password"
     else:
-        return "Login Successful"
+        return res[0]
 
 
 def udpate_user(uid, user_name, user_password):

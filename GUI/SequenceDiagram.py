@@ -137,7 +137,7 @@ class TaskManagerApp(Frame): # 顺序图界面 也是编辑界面
 
         top_add_more = tk.Toplevel()
         top_add_more.title("任务详情")
-        top_add_more.geometry("300x100+630+300")
+        top_add_more.geometry("300x120+630+300")
 
         def on_cancel():
             # 弹窗关闭
@@ -156,12 +156,15 @@ class TaskManagerApp(Frame): # 顺序图界面 也是编辑界面
         label_Frame.pack(pady=20)
         extend_Frame = Frame(top_add_more, width=100, height=50, bg="LightSteelBlue") # #方便扩展，在添加界面不使用。在修改的时候使用。
 
+        Label(label_Frame, text="点击上方菜单栏修改权重等信息").grid(row=0, column=0,columnspan=4, padx=10, pady=5)
+
+
         l1 = Label(label_Frame, text="0小时")
-        l1.grid(row=0, column=0, padx=10, pady=5)
+        l1.grid(row=1, column=0, padx=10, pady=5)
         l2 = Label(label_Frame, text="无")
-        l2.grid(row=0, column=1, padx=15, pady=5)
+        l2.grid(row=1, column=1, padx=15, pady=5)
         l3 = Label(label_Frame, text="否")
-        l3.grid(row=0, column=2, padx=10, pady=5)
+        l3.grid(row=1, column=2, padx=10, pady=5)
 
 
 
@@ -171,7 +174,7 @@ class TaskManagerApp(Frame): # 顺序图界面 也是编辑界面
             change_daily(l3,change_v3)
         else:
             Button(label_Frame, text="确定", command=lambda: on_cancel(),bg = "yellow").\
-                grid(row = 0, column = 3, padx=10, pady=5)
+                grid(row = 1, column = 3, padx=10, pady=5)
 
         for i in range(25):
             time_nume_menu.add_command(label=f"{i}小时", command=lambda v=i: change_duration(l1,v))

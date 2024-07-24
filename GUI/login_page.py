@@ -1,7 +1,9 @@
 import tkinter as tk
 from tkinter import messagebox
-from GUI.main_window import open_main_window
-from database.db_handler import register_user, get_user_info
+from GUI.WelcomeWindow import openWelcomeWindow
+from ctrl.handler import handle
+from base.request import Command,Request
+from database.db_handler import init_db
 
 
 def center_window(window, width, height):
@@ -37,11 +39,15 @@ class RegistrationWindow:
     def register(self):
         username = self.username_entry.get()
         password = self.password_entry.get()
-        if register_user(username, password):
+        request = Request(req_type=Command.REGISTER_USER, user_name=username, user_password=password)
+        ret = handle(request)
+        if ret == "Successfully registered":
             messagebox.showinfo("成功", "注册成功！")
             self.master.destroy()  # 关闭注册窗口
+        elif ret == "Invalid username or password":
+            messagebox.showerror("错误", "密码至少八位")
         else:
-            messagebox.showerror("错误", "用户名已存在。")
+            messagebox.showerror("错误", "未知错误。")
 
 
 class LoginWindow:
@@ -49,7 +55,7 @@ class LoginWindow:
         self.master = master
         self.master.title('登录')
         self.master.geometry('400x250')  # 设定窗口大小
-        center_window(self.master, 605, 400)  # 居中显示
+        center_window(self.master, 605, 500)  # 居中显示
         self.frame = tk.Frame(self.master)
         self.username_label = tk.Label(self.frame, text="用户名:", font=('华文行楷', 15))
         self.username_label.pack(pady=5)
@@ -63,19 +69,29 @@ class LoginWindow:
 
         self.login_button = tk.Button(self.frame, text="***** 登录 *****", command=self.login, font=('华文行楷', 20))
         self.login_button.pack(pady = 5)
+        self.tourist_button = tk.Button(self.frame, text="***游客模式***", command=self.tourist_login, font=('华文行楷', 20))
+        self.tourist_button.pack(pady=5)
 
         self.frame.pack()
+
+
+    def tourist_login(self):
+        self.master.destroy()  # 关闭登录窗口
+        openWelcomeWindow(uid= -1, nickname= "游客朋友")
 
     def login(self):
         username = self.username_entry.get()
         password = self.password_entry.get()
-        user_info = get_user_info(username)
-        if user_info and user_info[2] == password:
+        request = Request(req_type=Command.LOG_IN, user_name=username, user_password=password)
+        ret= handle(request)
+        if ret == "User not found":
+            messagebox.showerror("错误", "无效的用户名")
+        elif ret == "Wrong password":
+            messagebox.showerror("错误", "密码错误")
+        else:
             messagebox.showinfo("成功", "登录成功！")
             self.master.destroy()  # 关闭登录窗口
-            # open_main_window()
-        else:
-            messagebox.showerror("错误", "无效的用户名或密码。")
+            openWelcomeWindow(uid=ret,nickname=username)
 
 
 def login_page():
@@ -104,7 +120,7 @@ def login_page():
 
     root.mainloop()
 
-
-
-login_page()
+if __name__ == '__main__':
+    init_db()
+    login_page()
 
