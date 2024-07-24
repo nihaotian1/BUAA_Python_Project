@@ -84,7 +84,7 @@ class TaskDisplayApp:
 
     # def __init__(self, root):
         # def select_date():
-            # 当用户选择日期时，这个函数会被调用
+            #当用户选择日期时，这个函数会被调用
         #   selected_date = self.cal.get_date()
         #   self.date_label.config(text=f"Selected Date: {selected_date}")
 
