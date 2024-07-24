@@ -20,6 +20,12 @@ class RootWindow(tk.Frame): # 开始界面
             self.root = root
             self.root.title("Welcome to Mission Planner" + str(self.nickname))
             self.root.geometry("1200x720+150+0")  # 扩大视图界面
+            top_menu = tk.Menu(self.root,bg="gray")
+            top_menu.add_command(label="登出并退出", command=self.sign_out)
+            self.root.config(menu=top_menu)
+            top_menu.add_command(label="帮助", command=self.help_for_user)
+
+
 
             # 创建UI框架
             self.setup_side_buttom()
@@ -39,7 +45,7 @@ class RootWindow(tk.Frame): # 开始界面
 
             # 修改上一级数据
             self.content_area.destroy()  # 销毁原来的内容区域，注意所有不能留给下一界面的组件都需要放在这里，因为只摧毁它
-            self.root.title("Welcome to Mission Planner" + self.nickname)
+            self.root.title("Welcome to Mission Planner" + str(self.nickname))
             self.root.geometry("1200x720+150+0")  # 扩大视图界面
 
             # 修改按钮颜色  注意指令始终不变，否则会导致import循环依赖，造成死锁
@@ -121,7 +127,7 @@ class RootWindow(tk.Frame): # 开始界面
         self.update_today_task()
 
         if self.num_yellow == 0 and self.num_green == 0:
-            tk.Label(today_text_frame, text="你今天没有认我哦：\n快去点击下方的编辑按钮添加任务吧！", font=("微软雅黑", 14)).pack()
+            tk.Label(today_text_frame, text="你今天没有任务哦：\n快去点击下方的编辑按钮添加任务吧！", font=("微软雅黑", 14)).pack()
         elif self.num_yellow == 0:
             tk.Label(today_text_frame, text="你今天的任务全部完成了哦：\n真棒！", font=("微软雅黑", 14)).pack()
         elif self.num_green == 0:
@@ -192,10 +198,20 @@ class RootWindow(tk.Frame): # 开始界面
         pass
 
     def sign_out(self): # 登出界面
-        pass
+        top = tk.Toplevel(self.root)
+        top.geometry("300x150+600+300")
+        top.title("确认退出")
+        tk.Label(top, text="确认退出登录？\n这会关闭APP\n你需要重新点击APP登录", font=("微软雅黑", 14)).pack()
+        button_frame = tk.Frame(top)
+        button_frame.pack(pady=10)
+        tk.Button(button_frame, text="确认",bg="red", command=self.root.destroy).grid(row=0, column=0, padx=10, pady=10)
+        tk.Button(button_frame, text="取消", command=top.destroy).grid(row=0, column=1, padx=10, pady=10)
 
     def close_app(self):
         self.content_area.destroy()
+
+    def help_for_user(self):
+        pass
 
 
 def openWelcomeWindow(app=None,uid = None, nickname = None):
@@ -210,4 +226,4 @@ def openWelcomeWindow(app=None,uid = None, nickname = None):
 
 
 if __name__ == '__main__':
-    openWelcomeWindow()
+    openWelcomeWindow(uid=-1,nickname="游客朋友")

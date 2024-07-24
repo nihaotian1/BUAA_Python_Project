@@ -55,7 +55,7 @@ class LoginWindow:
         self.master = master
         self.master.title('登录')
         self.master.geometry('400x250')  # 设定窗口大小
-        center_window(self.master, 605, 400)  # 居中显示
+        center_window(self.master, 605, 500)  # 居中显示
         self.frame = tk.Frame(self.master)
         self.username_label = tk.Label(self.frame, text="用户名:", font=('华文行楷', 15))
         self.username_label.pack(pady=5)
@@ -69,8 +69,15 @@ class LoginWindow:
 
         self.login_button = tk.Button(self.frame, text="***** 登录 *****", command=self.login, font=('华文行楷', 20))
         self.login_button.pack(pady = 5)
+        self.tourist_button = tk.Button(self.frame, text="***游客模式***", command=self.tourist_login, font=('华文行楷', 20))
+        self.tourist_button.pack(pady=5)
 
         self.frame.pack()
+
+
+    def tourist_login(self):
+        self.master.destroy()  # 关闭登录窗口
+        openWelcomeWindow(uid= -1, nickname= "游客朋友")
 
     def login(self):
         username = self.username_entry.get()
