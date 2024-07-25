@@ -343,13 +343,13 @@ def task_exists(task_id):
 '''
 
 
-def get_all_types():
+
+def get_all_types(uid):
     with connect_db() as conn:
         c = conn.cursor()
-        c.execute("SELECT DISTINCT type FROM tasks")
+        c.execute("SELECT DISTINCT type FROM tasks WHERE uid = ?", (uid,))
         types = [row[0] for row in c.fetchall()]
         return types
-
 
 '''
     用于清空整个数据库
