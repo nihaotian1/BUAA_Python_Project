@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import Listbox, END, ttk, StringVar, Entry, Button, Label, Frame
+from tkinter import Listbox, END, ttk, StringVar, Entry, Button, Label, Frame, scrolledtext
 from datetime import datetime
 from ctrl.handler import handle
 from base.request import Command,Request
@@ -53,11 +53,30 @@ class TaskManagerApp(Frame): # 顺序图界面 也是编辑界面
 
         button_frame = Frame(self.task_list_frame,width=100,height=50,bg="Cyan")
         button_frame.grid(row =0, column =0, padx=0, pady=0)
-        self.remove_button = Button(button_frame, text="删除所选任务", command=self.remove_task, bg="red")
-        self.change_task_button = Button(button_frame, text="修改所选任务", command=self.change_task, bg="orange")
-        self.details_button = Button(button_frame, text="所选任务详情", command=self.show_task_details, bg="gray")
-        self.complete_button = Button(button_frame, text="完成所选任务", command=self.complete_task, bg="green")
-        self.remove_button.grid(row=0, column=0, padx=0, pady=5)
+
+        see_button_frame = Frame(button_frame,width=10,height=50,bg="Cyan")
+        see_button_frame.grid(row=0, column=0, padx=0, pady=0)
+        do_button_frame = Frame(button_frame,width=100,height=50,bg="Cyan")
+        do_button_frame.grid(row=0, column=1, padx=0, pady=0)
+        white_button_frame = Frame(button_frame,width=150,height=50,bg="Cyan")
+        white_button_frame.grid(row=0, column=2, padx=0, pady=0)
+        button_frame.columnconfigure(0, minsize=100)
+        button_frame.columnconfigure(1,minsize = 780,weight=1)
+        button_frame.columnconfigure(2, minsize=100)
+
+
+        self.see_all_button = Button(see_button_frame, text="全部任务", command=self.update_task_list, bg="white")
+        self.see_all_button.grid(row=0, column=0, padx=1, pady=5)
+        self.see_today_button = Button(see_button_frame, text="只看今日", command=self.update_today_list, bg="white")
+        self.see_today_button.grid(row=0, column=1, padx=1, pady=5)
+        self.see_outdated_button = Button(see_button_frame, text="已过期", command=self.update_outdated_list, bg="white")
+        self.see_outdated_button.grid(row=0, column=2, padx=1, pady=5)
+
+        self.remove_button = Button(do_button_frame, text="删除所选任务", command=self.remove_task, bg="red")
+        self.change_task_button = Button(do_button_frame, text="修改所选任务", command=self.change_task, bg="orange")
+        self.details_button = Button(do_button_frame, text="所选任务详情", command=self.show_task_details, bg="Honeydew")
+        self.complete_button = Button(do_button_frame, text="完成所选任务", command=self.complete_task, bg="green")
+        self.remove_button.grid(row=0, column=0, padx=1, pady=5)
         self.change_task_button.grid(row=0, column=1, padx=1, pady=5)
         self.details_button.grid(row=0, column=2, padx=1, pady=5)
         self.complete_button.grid(row=0, column=3, padx=1, pady=5)
@@ -91,23 +110,27 @@ class TaskManagerApp(Frame): # 顺序图界面 也是编辑界面
         self.deadline_entry = Entry(self.AddFrame, width=20)
         self.deadline_entry.grid(row=2, column=1, padx=10, pady=5)
 
-        Label(self.AddFrame, text="*任务类型（默认无）:").grid(row=3, column=0, padx=10, pady=5)
-        self.type_entry = Entry(self.AddFrame, width=5)
-        self.type_entry.grid(row=3, column=1, padx=10, pady=5)
-
-        Label(self.AddFrame, text="*任务描述:").grid(row=4, column=0, padx=10, pady=5)
+        Label(self.AddFrame, text="*任务描述:").grid(row=3, column=0, padx=10, pady=5)
         self.description_entry = tk.Text(self.AddFrame, width=40, height=5)
-        self.description_entry.grid(row=4, column=1, padx=10, pady=5)
+        self.description_entry.grid(row=3, column=1, padx=10, pady=5)
+
+
+        self.used_types = [] #需要调用后端新函数进行初始化
+        self.recommended_types = ["工作","学习","竞赛","生活","长期规划","放纵"]
+        self.current_type = "未分类"
 
         self.duration_value = 0
         self.weight_value = 0
         self.daily_value = 0
 
-        button_add_more = Button(self.AddFrame, text="添加权重等信息", command=self.create_add_more_menu, bg="yellow")
-        button_add_more.grid(row=5, column=0, padx=10, pady=5)
+        button_add_more = Button(self.AddFrame, text="设置权重等信息", command=self.create_add_more_menu, bg="yellow")
+        button_add_more.grid(row=4, column=0, padx=10, pady=5)
+
+        button_type_more = Button(self.AddFrame, text="设置任务类型", command=self.create_type_more_menu, bg="yellow")
+        button_type_more.grid(row=4, column=1, padx=10, pady=5)
 
 
-        self.cancel_button = Button(self.AddFrame, text="取消", command=self.closeADDFrame, bg="red")
+        self.cancel_button = Button(self.AddFrame, text="取消", command=self.closeADDFrame, bg="GhostWhite")
         self.cancel_button.grid(row=6, column=0, padx=10, pady=5)
         self.add_button = Button(self.AddFrame, text="确认", command=self.add_task, bg="yellow")
         self.add_button.grid(row=6, column=1, padx=10, pady=5)
@@ -136,7 +159,7 @@ class TaskManagerApp(Frame): # 顺序图界面 也是编辑界面
                 l3["text"] = "否"
 
         top_add_more = tk.Toplevel()
-        top_add_more.title("任务详情")
+        top_add_more.title("设置任务详情")
         top_add_more.geometry("300x120+630+300")
 
         def on_cancel():
@@ -190,10 +213,72 @@ class TaskManagerApp(Frame): # 顺序图界面 也是编辑界面
 
         return top_add_more , extend_Frame
 
+
+
+    def create_type_more_menu(self):
+        top_type_more = tk.Toplevel()
+        top_type_more.title("设置任务类型")
+        top_type_more.geometry("300x200+630+300")
+
+        def on_cancel():
+            # 弹窗关闭
+            top_type_more.destroy()
+
+        def change_type(v,l):
+            self.current_type = v
+            l["text"] = v
+
+        def add_type_and_use(entry_value, l):
+            print(entry_value)
+            if entry_value and entry_value not in self.used_types:
+                self.used_types.append(entry_value)
+                used_menu.add_command(label=entry_value, command=lambda v=entry_value: change_type(v, l))
+            change_type(entry_value, l)
+
+        type_menu = tk.Menu(top_type_more, tearoff=0)
+        recommended_menu = tk.Menu(type_menu, tearoff=0)
+        used_menu = tk.Menu(type_menu, tearoff=0)
+
+        type_menu.add_cascade(label="使用推荐类型", menu=recommended_menu)
+        for re_type in self.recommended_types:
+            recommended_menu.add_command(label=re_type, command=lambda v=re_type: add_type_and_use(v, l1))
+
+        type_menu.add_cascade(label="使用已有类型", menu=used_menu)
+        for used_type in self.used_types:
+            used_menu.add_command(label=used_type, command=lambda v=used_type: add_type_and_use(v, l1))
+
+
+        type_label_Frame = Frame(top_type_more, width=100, height=50, bg="LightSteelBlue")
+        type_label_Frame.pack(pady=5)
+        Label(type_label_Frame, text="点击上方菜单栏修改任务类型",bg="LightSteelBlue").pack(pady=1)
+        l1 = Label(type_label_Frame, text=self.current_type,font=("宋体", 20))
+        l1.pack(pady=1)
+
+        button_Frame = Frame(top_type_more, width=100, height=50, bg="LightSteelBlue")
+        button_Frame.pack(pady=5)
+        Button(top_type_more, text="完成", command=on_cancel,bg = "yellow").pack(pady=10)
+
+        Label(button_Frame, text="添加并使用新类型").grid(row=0, column=0,columnspan=2, padx=10, pady=5)
+        type_entry = tk.Entry(button_Frame, width=15)
+        type_entry.grid(row=1, column=0, padx=10, pady=5)
+        Button(button_Frame, text="确定",command=lambda: add_type_and_use(type_entry.get().strip(), l1),\
+               bg = "LemonChiffon").grid(row=1, column=1, padx=10, pady=5)
+
+
+        top_type_more["menu"] = type_menu
+
+
+
+
     def openADDFrame(self):  # 打开添加任务界面（点击ADD）
         self.duration_value = 0
         self.weight_value = 0
         self.daily_value = 0
+        self.current_type = "未分类"
+        self.deadline_entry.delete(0, "end")
+        self.description_entry.delete("1.0", "end")
+        self.task_name_entry.delete(0, "end")
+
 
         self.task_list_frame.pack_forget()  # 先把列表区域隐藏
         self.AddFrame.pack(pady=20)  # 再显示输入框
@@ -226,7 +311,9 @@ class TaskManagerApp(Frame): # 顺序图界面 也是编辑界面
         task_description = self.description_entry.get("1.0", "end-1c").strip()
 
         # 调用后端处理函数
-        task_type = self.type_entry.get().strip()
+        task_type = self.current_type
+        if task_type == "":
+            task_type = "未分类"
         oneMission = Mission(uid=self.uid,name=task_name,duration=task_duration,due=deadline,\
                              weight=task_weight,is_daily=task_daily,description=task_description,type=task_type)
         req = Request(req_type=Command.CREATE,uid=self.uid,mission=oneMission)
@@ -282,16 +369,20 @@ class TaskManagerApp(Frame): # 顺序图界面 也是编辑界面
         mission = self.find_mission_index()
         top = tk.Toplevel()
         top.title("任务详情")
-        top.geometry("300x300+630+300")
+        top.geometry("250x360+600+200")
 
 
         def on_cancel():
             # 弹窗关闭
             top.destroy()
 
-        Label(top,text="任务名称:"+mission.name,font=("宋体", 14)).pack(pady=8)
-        Label(top,text="截止日期:"+mission.due,font=("宋体", 14)).pack(pady=8)
-        Label(top,text="持续时间:"+str(mission.duration)+"小时",font=("宋体", 14)).pack(pady=8)
+        Label(top,text="任务名称:",font=("宋体", 14),bg="PaleGreen").grid(row=0, column=0, padx=10, pady=5)
+        Label(top,text=mission.name,font=("宋体", 14),bg="Linen").grid(row=0, column=1, padx=10, pady=5)
+        Label(top,text="截止日期:",font=("宋体", 14),bg="PaleGreen").grid(row=1, column=0, padx=10, pady=5)
+        Label(top,text=mission.due,font=("宋体", 14),bg="Linen").grid(row=1, column=1, padx=10, pady=5)
+        Label(top,text="持续时间:",font=("宋体", 14),bg="PaleGreen").grid(row=2, column=0, padx=10, pady=5)
+        Label(top,text=str(mission.duration)+"小时",font=("宋体", 14),\
+              bg="Linen").grid(row=2, column=1, padx=10, pady=5)
         weight_str = "无"
         if mission.weight == 1:
             weight_str = "低"
@@ -299,14 +390,26 @@ class TaskManagerApp(Frame): # 顺序图界面 也是编辑界面
             weight_str = "中"
         elif mission.weight == 3:
             weight_str = "高"
-        Label(top,text="权重:"+weight_str,font=("宋体", 14)).pack(pady=8)
+        Label(top,text="权重:",font=("宋体", 14),bg="PaleGreen").grid(row=3, column=0, padx=10, pady=5)
+        Label(top,text=weight_str,font=("宋体", 14),bg="Linen").grid(row=3, column=1, padx=10, pady=5)
         isdaily_str = "否"
         if mission.isdaily:
             isdaily_str = "是"
-        Label(top,text="日常:"+isdaily_str,font=("宋体", 14)).pack(pady=8)
-        Label(top,text="任务描述:",font=("宋体", 14)).pack(pady=8)
-        Label(top,text=mission.description,font=("宋体", 14)).pack(pady=8)
-        Button(top, text="知道了", command=on_cancel,bg = "yellow").pack(pady=8)
+        Label(top,text="日常:",font=("宋体", 14),bg="PaleGreen").grid(row=4, column=0, padx=10, pady=5)
+        Label(top,text=isdaily_str,font=("宋体", 14),bg="Linen").grid(row=4, column=1, padx=10, pady=5)
+        Label(top, text="任务类型:", font=("宋体", 14),bg="PaleGreen").grid(row=5, column=0, padx=10, pady=5)
+        Label(top, text=mission.type, font=("宋体", 14),bg="Linen").grid(row=5, column=1, padx=10, pady=5)
+        Label(top,text="任务描述:",font=("宋体", 14),bg="PaleGreen").grid(row=6, column=0, columnspan=2,padx=10, pady=5)
+        if mission.description:
+            top.geometry("250x450+600+180")
+            text_frame = Frame(top, width=0.8, height=100, bg="LightSteelBlue")
+            text_frame.grid(row=7, column=0, columnspan=2, padx=10, pady=5)
+            text_area = scrolledtext.ScrolledText(text_frame, wrap=tk.WORD, width=30, height=10)
+            text_area.pack()
+            text_area.insert(1.0, mission.description)
+        else:
+            Label(top,text="暂无描述").grid(row=7, column=0, columnspan=2, padx=10, pady=5)
+        Button(top, text="知道了", command=on_cancel,bg = "yellow").grid(row=8, column=0,columnspan=2, padx=10, pady=5)
 
 
 
@@ -314,6 +417,10 @@ class TaskManagerApp(Frame): # 顺序图界面 也是编辑界面
         mission = self.find_mission_index()
         top = None
         extend_frame = None
+        self.duration_value = mission.duration
+        self.weight_value = mission.weight
+        self.daily_value = mission.isdaily
+
         if mission:
             # 弹出修改任务界面
             top, extend_frame= self.create_add_more_menu(change_v1=mission.duration,change_v2=mission.weight,change_v3=mission.isdaily)
@@ -424,8 +531,11 @@ class TaskManagerApp(Frame): # 顺序图界面 也是编辑界面
 
     def update_task_list(self): # 更新任务列表，调用上面那个函数
         self.getAllTasks()
+        self.see_today_button["bg"] = "white"
+        self.see_outdated_button["bg"] = "white"
+        self.see_all_button["bg"] = "gray"
         self.task_listbox.delete(0, END)
-        status_color = 'lightgrey'
+        status_color = 'grey'
         staus_str = '未完成'
         for mission in self.tasks:
             try:
@@ -455,6 +565,56 @@ class TaskManagerApp(Frame): # 顺序图界面 也是编辑界面
             else:
                 task_str = f"{mission.name} - {staus_str} (截止: {deadline_str})"
             self.task_listbox.insert(END,  task_str)
+            self.task_listbox.itemconfig(END, bg=status_color)
+
+    def update_today_list(self):
+        self.task_listbox.delete(0, END)
+        self.see_today_button["bg"] = "gray"
+        self.see_outdated_button["bg"] = "white"
+        self.see_all_button["bg"] = "white"
+        req = Request(req_type=Command.GET_ALL, uid=self.uid)
+        tasks = handle(req)
+
+        for mission in tasks:
+            try:
+                due = datetime.strptime(mission.due, "%Y-%m-%d")  # 返回datetime对象
+                due = due.date()  # 取出datetime里的date部分
+            except:
+                continue
+            if due > datetime.now().date():
+                continue
+            elif due < datetime.now().date():
+                break
+            elif mission.complete:
+                status_color = 'green'
+                staus_str = '已完成'
+            else:
+                status_color = 'yellow'
+                staus_str = '正在进行'
+
+            deadline_str = mission.due
+            if staus_str == '已完成':
+                task_str = f"{mission.name} - {staus_str}"
+            else:
+                task_str = f"{mission.name} - {staus_str} (截止: {deadline_str})"
+            self.task_listbox.insert(END, task_str)
+            self.task_listbox.itemconfig(END, bg=status_color)
+
+    def update_outdated_list(self):
+        self.task_listbox.delete(0, END)
+        self.see_today_button["bg"] = "white"
+        self.see_outdated_button["bg"] = "gray"
+        self.see_all_button["bg"] = "white"
+
+        req = Request(req_type=Command.GET_EXPIRED, uid=self.uid)
+        tasks = handle(req)
+
+        for mission in tasks:
+            status_color = 'red'
+            staus_str = '已过期'
+            deadline_str = mission.due
+            task_str = f"{mission.name} - {staus_str} (截止: {deadline_str})"
+            self.task_listbox.insert(END, task_str)
             self.task_listbox.itemconfig(END, bg=status_color)
 
     def close_window(self):

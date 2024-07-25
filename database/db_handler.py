@@ -260,7 +260,7 @@ def get_expired_tasks(uid):
     today = datetime.now().strftime("%Y-%m-%d")
     with connect_db() as conn:
         c = conn.cursor()
-        c.execute("SELECT * FROM tasks WHERE due_date <= ? AND uid = ?", (today, uid))
+        c.execute("SELECT * FROM tasks WHERE due_date < ? AND uid = ?", (today, uid))
         rows = c.fetchall()
         return [mission_from_row(row) for row in rows]
 

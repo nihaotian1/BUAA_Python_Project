@@ -131,7 +131,7 @@ class RootWindow(tk.Frame): # 开始界面
         elif self.num_yellow == 0:
             tk.Label(today_text_frame, text="你今天的任务全部完成了哦：\n真棒！", font=("微软雅黑", 14)).pack()
         elif self.num_green == 0:
-            tk.Label(today_text_frame, text="今日任还没有完成任务哦：\n加油！", font=("微软雅黑", 14)).pack()
+            tk.Label(today_text_frame, text="今日任务还没有完成任务哦：\n加油！", font=("微软雅黑", 14)).pack()
         else:
             tk.Label(today_text_frame, text="今日你已经完成"+ str(self.num_green)+"个任务\n还有"\
                                             +str(self.num_yellow)+"个任务未完成：\n加油!", font=("微软雅黑", 14)).pack()
