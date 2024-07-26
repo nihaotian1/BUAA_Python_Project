@@ -54,7 +54,7 @@ class TaskDisplayApp:
 
         self.content_right_area = tk.Frame(self.content_area)
         # self.content_right_area.grid(row=0, column=3, sticky="nsew")
-        self.content_right_area.place(x=400, y=10, width=800, height=500)
+        self.content_right_area.place(x=200, y=10, width=1000, height=500)
 
         # 初始化categories_frame，确保它可以在整个类中被引用
         self.categories_frame = tk.Frame(sidebar)
@@ -68,7 +68,7 @@ class TaskDisplayApp:
 
         self.select_button = tk.Button(self.calendar_frame, text="Select Date", command=select_date)
         self.select_button.pack(side="top")
-        self.date_label = tk.Label(self.calendar_frame, text="")
+        self.date_label = tk.Label(self.calendar_frame, text="未选择")
         self.date_label.pack(side="top")
 
         # 创建一个用于显示任务列表的 Listbox
@@ -148,11 +148,15 @@ class TaskDisplayApp:
         #   expand=True, fill='both')
 
     def create_sidebar(self, sidebar):
-        def change_color_for_button(button):
-            self.buttons = [uncategorized_button, work_button, study_button, contest_button, life_button,
-                            long_term_planning_button, intemperance_button, day_todo_button,
-                            recent_tasks_button, todo_box_button]
+        def add_type(type, row_index):
+            tasks_uncategorized = []
+            button = tk.Button(self.categories_frame, text=str(type), font=('华文行楷', 15),
+                                             command=lambda: show_calendar(tasks_uncategorized, button),
+                                             bg="white")
+            self.buttons.append(button)
+            button.grid(row=row_index, column=0, sticky="ew")
 
+        def change_color_for_button(button):
             for item in self.buttons:
                 if item == button:
                     item["bg"] = "DarkGray"
@@ -178,54 +182,33 @@ class TaskDisplayApp:
             else:
                 self.categories_frame.grid(row=7, column=0, sticky="nsew")
 
+        self.buttons = []
+
         row_index = 7
 
         # 创建一个frame来容纳所有的类别按钮
         # 注意这里不需要重新定义categories_frame，而是使用在__init__中定义的那个
 
-        tasks_uncategorized = ["任务甲", "任务乙", "任务丙"]
-        uncategorized_button = tk.Button(self.categories_frame, text="未分类", font=('华文行楷', 15),
-                                         command=lambda: show_calendar(tasks_uncategorized, uncategorized_button),
-                                         bg="white")
-        uncategorized_button.grid(row=row_index, column=0, sticky="ew")
+        add_type("未分类", row_index)
         row_index += 1
 
-        tasks_work = ["任务甲", "任务乙", "任务丙"]
-        work_button = tk.Button(self.categories_frame, text="工作", font=('华文行楷', 15),
-                                command=lambda: show_calendar(tasks_work, work_button), bg="white")
-        work_button.grid(row=row_index, column=0, sticky="ew")
-        row_index += 1
+        # add_type("工作", row_index)
+        # row_index += 1
 
-        tasks_study = ["任务甲", "任务乙", "任务丙"]
-        study_button = tk.Button(self.categories_frame, text="学习", font=('华文行楷', 15),
-                                 command=lambda: show_calendar(tasks_study, study_button), bg="white")
-        study_button.grid(row=row_index, column=0, sticky="ew")
-        row_index += 1
+        # add_type("学习", row_index)
+        # row_index += 1
 
-        tasks_contest = ["任务甲", "任务乙", "任务丙"]
-        contest_button = tk.Button(self.categories_frame, text="竞赛", font=('华文行楷', 15),
-                                   command=lambda: show_calendar(tasks_contest, contest_button), bg="white")
-        contest_button.grid(row=row_index, column=0, sticky="ew")
-        row_index += 1
+        # add_type("竞赛", row_index)
+        # row_index += 1
 
-        tasks_life = ["任务甲", "任务乙", "任务丙"]
-        life_button = tk.Button(self.categories_frame, text="生活", font=('华文行楷', 15),
-                                command=lambda: show_calendar(tasks_life, life_button), bg="white")
-        life_button.grid(row=row_index, column=0, sticky="ew")
-        row_index += 1
+        # add_type("生活", row_index)
+        # row_index += 1
 
-        tasks_long_term_planning = ["任务甲", "任务乙", "任务丙"]
-        long_term_planning_button = tk.Button(self.categories_frame, text="长期规划", font=('华文行楷', 15),
-                                              command=lambda: show_calendar(tasks_long_term_planning,
-                                                                            long_term_planning_button), bg="white")
-        long_term_planning_button.grid(row=row_index, column=0, sticky="ew")
-        row_index += 1
+        # add_type("长期规划", row_index)
+        # row_index += 1
 
-        tasks_intemperance = ["任务甲", "任务乙", "任务丙"]
-        intemperance_button = tk.Button(self.categories_frame, text="放纵", font=('华文行楷', 15),
-                                        command=lambda: show_calendar(tasks_intemperance, intemperance_button),
-                                        bg="white")
-        intemperance_button.grid(row=row_index, column=0, sticky="ew")
+        # add_type("放纵", row_index)
+        # row_index += 1
 
         # 最初隐藏类别按钮
         self.categories_frame.pack_forget()
@@ -235,20 +218,23 @@ class TaskDisplayApp:
         spacer_top.grid(row=0, column=0)
 
         # 其他按钮保持不变
-        tasks_day_todo = ["任务甲", "任务乙", "任务丙"]
+        tasks_day_todo = ["任务乙", "任务丙", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
         day_todo_button = tk.Button(sidebar, text="Day Todo", font=('华文行楷', 15),
                                     command=lambda: show_calendar(tasks_day_todo, day_todo_button), bg="white")
         day_todo_button.grid(row=1, column=0, sticky="ew")
+        self.buttons.append(day_todo_button)
 
         recent_tasks = ["任务甲", "任务乙", "任务丙"]
         recent_tasks_button = tk.Button(sidebar, text="最近待办", font=('华文行楷', 15),
                                         command=lambda: show_calendar(recent_tasks, recent_tasks_button), bg="white")
         recent_tasks_button.grid(row=2, column=0, sticky="ew")
+        self.buttons.append(recent_tasks_button)
 
         tasks_todo_box = ["任务甲", "任务乙", "任务丙"]
         todo_box_button = tk.Button(sidebar, text="待办箱", font=('华文行楷', 15),
                                     command=lambda: show_calendar(tasks_todo_box, todo_box_button), bg="white")
         todo_box_button.grid(row=4, column=0, sticky="ew")
+        self.buttons.append(todo_box_button)
 
         # 添加一些垂直间距
         spacer = tk.Label(sidebar, text="", pady=10)
@@ -259,9 +245,6 @@ class TaskDisplayApp:
         categories_button = tk.Button(sidebar, text="分类清单", font=('华文行楷', 15), command=toggle_categories, bg="white")
         categories_button.grid(row=6, column=0, sticky="ew")
 
-        self.buttons = [uncategorized_button, work_button, study_button, contest_button, life_button,
-                        long_term_planning_button, intemperance_button, day_todo_button,
-                        recent_tasks_button, todo_box_button]
 
 def createMainWindowAndReturn(app=None):
     # root = tk.Tk()
