@@ -260,7 +260,7 @@ def get_expired_tasks(uid):
     today = datetime.now().strftime("%Y-%m-%d")
     with connect_db() as conn:
         c = conn.cursor()
-        c.execute("SELECT * FROM tasks WHERE due_date <= ? AND uid = ?", (today, uid))
+        c.execute("SELECT * FROM tasks WHERE due_date < ? AND uid = ?", (today, uid))
         rows = c.fetchall()
         return [mission_from_row(row) for row in rows]
 
@@ -343,13 +343,13 @@ def task_exists(task_id):
 '''
 
 
-def get_all_types():
+
+def get_all_types(uid):
     with connect_db() as conn:
         c = conn.cursor()
-        c.execute("SELECT DISTINCT type FROM tasks")
+        c.execute("SELECT DISTINCT type FROM tasks WHERE uid = ?", (uid,))
         types = [row[0] for row in c.fetchall()]
         return types
-
 
 '''
     用于清空整个数据库

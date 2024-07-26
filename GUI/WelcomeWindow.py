@@ -131,7 +131,7 @@ class RootWindow(tk.Frame): # 开始界面
         elif self.num_yellow == 0:
             tk.Label(today_text_frame, text="你今天的任务全部完成了哦：\n真棒！", font=("微软雅黑", 14)).pack()
         elif self.num_green == 0:
-            tk.Label(today_text_frame, text="今日任还没有完成任务哦：\n加油！", font=("微软雅黑", 14)).pack()
+            tk.Label(today_text_frame, text="今日任务还没有完成任务哦：\n加油！", font=("微软雅黑", 14)).pack()
         else:
             tk.Label(today_text_frame, text="今日你已经完成"+ str(self.num_green)+"个任务\n还有"\
                                             +str(self.num_yellow)+"个任务未完成：\n加油!", font=("微软雅黑", 14)).pack()
@@ -140,7 +140,7 @@ class RootWindow(tk.Frame): # 开始界面
     def update_today_task(self):
         self.task_list.delete(0, END)
 
-        req = Request(Command.GET_ALL, self.uid)
+        req = Request(req_type=Command.GET_ALL, uid=self.uid)
         tasks = handle(req)
 
         self.num_yellow = 0
@@ -185,8 +185,9 @@ class RootWindow(tk.Frame): # 开始界面
 
     def bit_to_main(self):
         print("want from start to main")
-        # self.close_app()
-        # main_window.open_main_window()
+        from GUI.main_window import createMainWindowAndReturn
+        createMainWindowAndReturn(self)
+        print("sussess to main")
 
     def sign_in(self): # 登录界面
         self.uid = -1
@@ -226,4 +227,4 @@ def openWelcomeWindow(app=None,uid = None, nickname = None):
 
 
 if __name__ == '__main__':
-    openWelcomeWindow(uid=-1,nickname="游客朋友")
+    openWelcomeWindow(uid=-1,nickname="管理员")
