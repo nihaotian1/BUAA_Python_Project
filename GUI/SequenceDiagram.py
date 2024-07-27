@@ -114,8 +114,8 @@ class TaskManagerApp(Frame): # 顺序图界面 也是编辑界面
         self.description_entry = tk.Text(self.AddFrame, width=40, height=5)
         self.description_entry.grid(row=3, column=1, padx=10, pady=5)
 
-
-        self.used_types = [] #需要调用后端新函数进行初始化
+        from database.db_handler import get_all_types
+        self.used_types = get_all_types(self.uid) #需要调用后端新函数进行初始化
         self.recommended_types = ["工作","学习","竞赛","生活","长期规划","放纵"]
         self.current_type = "未分类"
 
