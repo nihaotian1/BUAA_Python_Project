@@ -1,6 +1,7 @@
 from base.request import Request, Command
 import ctrl.mission_utils as m_utils
 import ctrl.user_uitls as u_utils
+import schedule_utils
 
 # class Command(Enum):
 #     CREATE = 1,      # 任务创建
@@ -50,4 +51,7 @@ def handle(req : Request):
         return m_utils.get_category(req.category, req.uid)
     elif req.req_type == Command.GET_CATEGORY_COLOR:
         return m_utils.get_category_color(req.category, req.uid)
+    elif req.req_type == Command.SCHEDULE:
+        return schedule_utils.schedule_tasks(req.uid, req.date)
+
     raise Exception('Unknown request type')
