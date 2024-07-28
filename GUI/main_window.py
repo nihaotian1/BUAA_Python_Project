@@ -1,8 +1,7 @@
 import tkinter as tk
 from tkcalendar import Calendar
 
-
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 # from ctrl.handler import handle
 # from base.request import Command, Request
 # from base.mission import Mission
@@ -42,15 +41,21 @@ class TaskDisplayApp:
         self.main_frame.rowconfigure(1, minsize=50)  # 下边栏有最小高度100像素
 
         self.selected_date = date.today()
+        self.current_date = date.today()
+        self.current_button = None
 
         self.create_addition()
 
     def create_addition(self):
         def select_date():
             # 当用户选择日期时，这个函数会被调用
-            selected_date = self.cal.get_date()
-            self.date_label.config(text=f"已选日期: {selected_date}" + " 将展示截止日期为此日期的该类型的任务")
+            date_str = self.cal.get_date()
+            selected_date = datetime.strptime(date_str, "%m/%d/%y").date()
+            self.date_label.config(
+                text=f"已选日期: {selected_date}" + " 将展示截止日期为此日期的全部任务")
             self.selected_date = selected_date
+
+            show_calendar_for_day_todo()
 
         sidebar = tk.Frame(self.content_area)
         # sidebar.grid(row=0, column=0, sticky="ns")
@@ -58,7 +63,7 @@ class TaskDisplayApp:
 
         self.content_right_area = tk.Frame(self.content_area)
         # self.content_right_area.grid(row=0, column=3, sticky="nsew")
-        self.content_right_area.place(x=200, y=10, width=1000, height=500)
+        self.content_right_area.place(x=200, y=10, width=1000, height=900)
 
         # 初始化categories_frame，确保它可以在整个类中被引用
         self.categories_frame = tk.Frame(sidebar)
@@ -67,7 +72,8 @@ class TaskDisplayApp:
         self.calendar_frame = tk.Frame(self.content_right_area, padx=120, pady=45)
         self.calendar_frame.pack(side="top", fill="both", expand=True)
 
-        self.cal = Calendar(self.calendar_frame, selectmode='day', year=2024, month=7, day=16)
+        self.cal = Calendar(self.calendar_frame, selectmode='day', year=self.current_date.year,
+                            month=self.current_date.month, day=self.current_date.day)
         self.cal.pack(side="top", fill="both", pady=(0, 10))
 
         self.select_button = tk.Button(self.calendar_frame, text="Select Date", command=select_date)
@@ -86,13 +92,43 @@ class TaskDisplayApp:
         # 在侧边栏添加一些内容
         # self.create_sidebar(sidebar)
 
+        def switch_button():
+            if not self.current_button == day_todo_button:
+                if self.cal.winfo_ismapped():
+                    self.cal.pack_forget()
+                if self.select_button.winfo_ismapped():
+                    self.select_button.pack_forget()
+                if self.date_label.winfo_ismapped():
+                    self.date_label.pack_forget()
+                if self.listbox.winfo_ismapped():
+                    self.listbox.pack_forget()
+
+                self.cal.pack(side="top", fill="both", pady=(0, 10))
+                self.listbox.pack(side="bottom", fill="both", expand=True)
+            else:
+                if self.cal.winfo_ismapped():
+                    self.cal.pack_forget()
+                if self.select_button.winfo_ismapped():
+                    self.select_button.pack_forget()
+                if self.date_label.winfo_ismapped():
+                    self.date_label.pack_forget()
+                if self.listbox.winfo_ismapped():
+                    self.listbox.pack_forget()
+
+                self.cal.pack(side="top", fill="both", pady=(0, 10))
+                self.select_button.pack(side="top")
+                self.date_label.pack(side="top")
+                self.listbox.pack(side="bottom", fill="both", expand=True)
+
         def add_type(type, row_index):
             tasks = []
             missions = find_tasks_by_type(type, self.uid)
             for mission in missions:
-                tasks.append(str(mission.name))
+                if mission.due == self.selected_date:
+                    tasks.append(str(mission.name))
+
             button = tk.Button(self.categories_frame, text=str(type), font=('华文行楷', 15),
-                               command=lambda: show_calendar(tasks, button),
+                               command=lambda: show_calendar(type, button),
                                bg="white")
             self.buttons.append(button)
             button.grid(row=row_index, column=0, sticky="ew")
@@ -104,57 +140,220 @@ class TaskDisplayApp:
                 else:
                     item["bg"] = "white"
 
-        def show_calendar(tasks, button):
+        def show_calendar(type, button):
+            self.current_button = button
+            switch_button()
+
+            missions = find_tasks_by_type(type, self.uid)
+
             # self.debug(button)
             change_color_for_button(button)
             # 清除任务列表
             self.listbox.delete(0, tk.END)
 
+            status_color = 'grey'
+            staus_str = '未完成'
+            self.listbox.insert(tk.END, "此处将展示“" + type + "”类型全部任务")
+            self.listbox.insert(tk.END, "")
             # 更新任务列表
-            for task in tasks:
-                self.listbox.insert(tk.END, task)
+            for mission in missions:
+                try:
+                    if (mission.complete == False):
+                        due = datetime.strptime(mission.due, "%Y-%m-%d")  # 返回datetime对象
+                        due = due.date()  # 取出datetime里的date部分
+                except:
+                    print("后端返回的日期格式错误")
+                try:
+                    if mission.complete:
+                        status_color = 'green'
+                        staus_str = '已完成'
+                    elif due < datetime.now().date():
+                        status_color = 'red'
+                        staus_str = '已过期'
+                    elif due == datetime.now().date():
+                        status_color = 'yellow'
+                        staus_str = '进行中'
+                    else:
+                        status_color = 'lightgrey'
+                        staus_str = '未完成'
+                except:
+                    print("error")
+
+                deadline_str = mission.due
+                if staus_str == '已完成':
+                    task_str = f"{mission.name} - {staus_str}"
+                else:
+                    task_str = f"{mission.name} - {staus_str} (截止: {deadline_str})"
+                self.listbox.insert(tk.END, task_str)
+                self.listbox.itemconfig(tk.END, bg=status_color)
 
             # 更改listbox中的字体
             self.listbox.config(font=("华文宋体", 15))  # 这里使用了华文宋体和字号12作为示例
 
-        def show_calendar_for_day_todo(tasks, selected_date):
+        def show_calendar_for_day_todo():
+            self.current_button = day_todo_button
+            switch_button()
+
+            tasks_day_todo = []
+            missions = find_tasks_by_due_date(self.selected_date, self.uid)
+            for mission in missions:
+                tasks_day_todo.append(str(mission.name))
+
             change_color_for_button(day_todo_button)
             # 清除任务列表
             self.listbox.delete(0, tk.END)
 
-            self.date_label.config(text=f"已选日期: {selected_date}" + " 将展示截止日期为此日期的全部任务，更改日期后，请重新点击左边栏的按钮")
+            self.date_label.config(
+                text=f"已选日期: {self.selected_date}" + " 将展示截止日期为此日期的全部任务")
 
+            status_color = 'grey'
+            staus_str = '未完成'
+            self.listbox.insert(tk.END, "此处将展示截止日期为“" + str(self.selected_date) + "”的全部任务")
+            self.listbox.insert(tk.END, "")
             # 更新任务列表
-            for task in tasks:
-                self.listbox.insert(tk.END, task)
+            for mission in missions:
+                try:
+                    if (mission.complete == False):
+                        due = datetime.strptime(mission.due, "%Y-%m-%d")  # 返回datetime对象
+                        due = due.date()  # 取出datetime里的date部分
+                except:
+                    print("后端返回的日期格式错误")
+                try:
+                    if mission.complete:
+                        status_color = 'green'
+                        staus_str = '已完成'
+                    elif due < datetime.now().date():
+                        status_color = 'red'
+                        staus_str = '已过期'
+                    elif due == datetime.now().date():
+                        status_color = 'yellow'
+                        staus_str = '进行中'
+                    else:
+                        status_color = 'lightgrey'
+                        staus_str = '未完成'
+                except:
+                    print("error")
+
+                deadline_str = mission.due
+                if staus_str == '已完成':
+                    task_str = f"{mission.name} - {mission.type} - {staus_str}"
+                else:
+                    task_str = f"{mission.name} - {mission.type} - {staus_str} (截止: {deadline_str})"
+                self.listbox.insert(tk.END, task_str)
+                self.listbox.itemconfig(tk.END, bg=status_color)
 
             # 更改listbox中的字体
             self.listbox.config(font=("华文宋体", 15))  # 这里使用了华文宋体和字号12作为示例
 
-        def show_calendar_for_recent_tasks(tasks):
+        def show_calendar_for_recent_tasks():
+            self.current_button = recent_tasks_button
+            switch_button()
+
+            missions = []
+            for i in range(7):
+                date_temp = date.today() + timedelta(days=i)
+                missions_temp = find_tasks_by_due_date(date_temp, self.uid)
+                for mission_temp in missions_temp:
+                    missions.append(mission_temp)
+
             change_color_for_button(recent_tasks_button)
             # 清除任务列表
             self.listbox.delete(0, tk.END)
 
             self.date_label.config(text="将展示截止日期在一周以内的全部任务")
 
+            status_color = 'grey'
+            staus_str = '未完成'
+            self.listbox.insert(tk.END, "此处将展示截止日期在当前日期（" + str(datetime.now().date()) + "）七天以内的全部任务")
+            self.listbox.insert(tk.END, "")
             # 更新任务列表
-            for task in tasks:
-                self.listbox.insert(tk.END, task)
+            for mission in missions:
+                try:
+                    if (mission.complete == False):
+                        due = datetime.strptime(mission.due, "%Y-%m-%d")  # 返回datetime对象
+                        due = due.date()  # 取出datetime里的date部分
+                except:
+                    print("后端返回的日期格式错误")
+                try:
+                    if mission.complete:
+                        status_color = 'green'
+                        staus_str = '已完成'
+                    elif due < datetime.now().date():
+                        status_color = 'red'
+                        staus_str = '已过期'
+                    elif due == datetime.now().date():
+                        status_color = 'yellow'
+                        staus_str = '进行中'
+                    else:
+                        status_color = 'lightgrey'
+                        staus_str = '未完成'
+                except:
+                    print("error")
+
+                deadline_str = mission.due
+                if staus_str == '已完成':
+                    task_str = f"{mission.name} - {mission.type} - {staus_str}"
+                else:
+                    task_str = f"{mission.name} - {mission.type} - {staus_str} (截止: {deadline_str})"
+                self.listbox.insert(tk.END, task_str)
+                self.listbox.itemconfig(tk.END, bg=status_color)
 
             # 更改listbox中的字体
             self.listbox.config(font=("华文宋体", 15))  # 这里使用了华文宋体和字号12作为示例
 
-        def show_calendar_for_todo_box(tasks):
+        def show_calendar_for_todo_box():
+            self.current_button = todo_box_button
+            switch_button()
+
+            missions = []
+            tasks = get_all_tasks(self.uid)
+            today = datetime.now().date()
+            for task in tasks:
+                due = datetime.strptime(task.due, "%Y-%m-%d").date()
+                if due >= today:
+                    missions.append(task)
+
             change_color_for_button(todo_box_button)
             # 清除任务列表
             self.listbox.delete(0, tk.END)
 
             self.date_label.config(text="将展示尚未截止的全部任务")
 
+            status_color = 'grey'
+            staus_str = '未完成'
+            self.listbox.insert(tk.END, "此处将展示尚未截止的全部任务")
+            self.listbox.insert(tk.END, "")
             # 更新任务列表
-            for task in tasks:
-                self.listbox.insert(tk.END, task)
+            for mission in missions:
+                try:
+                    if (mission.complete == False):
+                        due = datetime.strptime(mission.due, "%Y-%m-%d")  # 返回datetime对象
+                        due = due.date()  # 取出datetime里的date部分
+                except:
+                    print("后端返回的日期格式错误")
+                try:
+                    if mission.complete:
+                        status_color = 'green'
+                        staus_str = '已完成'
+                    elif due < datetime.now().date():
+                        status_color = 'red'
+                        staus_str = '已过期'
+                    elif due == datetime.now().date():
+                        status_color = 'yellow'
+                        staus_str = '进行中'
+                    else:
+                        status_color = 'lightgrey'
+                        staus_str = '未完成'
+                except:
+                    print("error")
+
+                deadline_str = mission.due
+                if staus_str == '已完成':
+                    task_str = f"{mission.name} - {mission.type} - {staus_str}"
+                else:
+                    task_str = f"{mission.name} - {mission.type} - {staus_str} (截止: {deadline_str})"
+                self.listbox.insert(tk.END, task_str)
+                self.listbox.itemconfig(tk.END, bg=status_color)
 
             # 更改listbox中的字体
             self.listbox.config(font=("华文宋体", 15))  # 这里使用了华文宋体和字号12作为示例
@@ -211,8 +410,7 @@ class TaskDisplayApp:
         for mission in missions:
             tasks_day_todo.append(str(mission.name))
         day_todo_button = tk.Button(sidebar, text="Day Todo", font=('华文行楷', 15),
-                                    command=lambda: show_calendar_for_day_todo(tasks_day_todo, self.selected_date),
-                                    bg="white")
+                                    command=lambda: show_calendar_for_day_todo(), bg="white")
         day_todo_button.grid(row=1, column=0, sticky="ew")
         self.buttons.append(day_todo_button)
 
@@ -223,7 +421,7 @@ class TaskDisplayApp:
             for mission in missions:
                 recent_tasks.append(str(mission.name))
         recent_tasks_button = tk.Button(sidebar, text="最近待办", font=('华文行楷', 15),
-                                        command=lambda: show_calendar_for_recent_tasks(recent_tasks), bg="white")
+                                        command=lambda: show_calendar_for_recent_tasks(), bg="white")
         recent_tasks_button.grid(row=2, column=0, sticky="ew")
         self.buttons.append(recent_tasks_button)
 
@@ -234,7 +432,7 @@ class TaskDisplayApp:
             if not expired.__contains__(task):
                 tasks_todo_box.append(str(task.name))
         todo_box_button = tk.Button(sidebar, text="待办箱", font=('华文行楷', 15),
-                                    command=lambda: show_calendar_for_todo_box(tasks_todo_box), bg="white")
+                                    command=lambda: show_calendar_for_todo_box(), bg="white")
         todo_box_button.grid(row=4, column=0, sticky="ew")
         self.buttons.append(todo_box_button)
 
