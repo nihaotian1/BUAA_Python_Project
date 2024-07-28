@@ -12,6 +12,8 @@ def schedule_tasks(uid, date):
     schedules = []
     cost = 0
     for m in missions:
+        if(m.complete):
+            continue
         cost += m.duration
         schedules.append(m)
         if cost >= 14:
@@ -21,9 +23,12 @@ def schedule_tasks(uid, date):
     start = 8
     end = 8
     for m in schedules:
-        end += m.duration
+        if m.duration != 0:
+            end += m.duration
+        else:
+            end += 1
         end = min(22, end)
-        times.append('f{}-{}'.format(start, end))
+        times.append('建议-从{}点到{}点'.format(start, end))
         start = end
         if start == 22:
             break

@@ -119,8 +119,13 @@ class RootWindow(tk.Frame): # 开始界面
         today_text_frame = tk.Frame(self.content_area)
         today_text_frame.pack(fill=tk.BOTH, expand=True)
 
+        button_frame = tk.Frame(self.content_area,width=100, height=50)
+        button_frame.pack(pady=10)
+        tk.Button(button_frame, text="今日任务", command=self.update_today_task,bg="LightCyan").pack(side=tk.LEFT, padx=10)
+        tk.Button(button_frame, text="调度任务", command=self.schedule_task, bg="LightCyan").pack(side=tk.LEFT, padx=10)
+
         self.task_list_frame = Frame(self.content_area, width=100, height=500, bg="white")
-        self.task_list_frame.pack(pady=20)
+        self.task_list_frame.pack(pady=0)
         self.task_list = Listbox(self.task_list_frame, width=50, height=20, font=("微软雅黑", 14))
         self.task_list.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
@@ -135,6 +140,35 @@ class RootWindow(tk.Frame): # 开始界面
         else:
             tk.Label(today_text_frame, text="今日你已经完成"+ str(self.num_green)+"个任务\n还有"\
                                             +str(self.num_yellow)+"个任务未完成：\n加油!", font=("微软雅黑", 14)).pack()
+
+
+    def schedule_task(self):
+        req = Request(req_type=Command.SCHEDULE, uid=self.uid, date=datetime.now().date())
+        tasks, times = handle(req)
+        self.task_list.delete(0, END)
+        status_color = 'Aqua'
+        status_weight_str = '无权重'
+        index = 0
+        for mission in tasks:
+            if(mission.weight == 1):
+                status_color = 'DeepSkyBlue'
+                status_weight_str = '低权重'
+            elif(mission.weight == 2):
+                status_color = 'Gold'
+                status_weight_str = '中权重'
+            elif(mission.weight == 3):
+                status_color = 'Tomato'
+                status_weight_str = '高权重'
+
+            status_time_str = times[index]
+
+
+            task_str = f"{mission.name} - 时间 -{status_time_str} - {status_weight_str}"
+            self.task_list.insert(END, task_str)
+            self.task_list.itemconfig(END, bg=status_color)
+
+            index += 1
+
 
 
     def update_today_task(self):
@@ -227,4 +261,4 @@ def openWelcomeWindow(app=None,uid = None, nickname = None):
 
 
 if __name__ == '__main__':
-    openWelcomeWindow(uid=-1,nickname="管理员")
+    openWelcomeWindow(uid=100,nickname="管理员")

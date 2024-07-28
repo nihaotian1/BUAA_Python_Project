@@ -100,17 +100,17 @@ class TaskManagerApp(Frame): # 顺序图界面 也是编辑界面
         self.AddFrame.place(relx=0, rely=0)
 
         Label(self.AddFrame, text="请添加新的任务:", font=("宋体", 14)).grid(row=0, column=0, padx=0, pady=5)
-        Label(self.AddFrame, text="(带*号选填)", font=("Arial", 14)).grid(row=0, column=1, padx=0, pady=5)
+        Label(self.AddFrame, text="(带*号选填)", font=("宋体", 14)).grid(row=0, column=1, padx=0, pady=5)
 
-        Label(self.AddFrame, text="任务名称:").grid(row=1, column=0, padx=10, pady=5)
+        Label(self.AddFrame, text="任务名称:", font=("宋体", 12)).grid(row=1, column=0, padx=10, pady=5)
         self.task_name_entry = Entry(self.AddFrame, width=40)
         self.task_name_entry.grid(row=1, column=1, padx=10, pady=5)
 
-        Label(self.AddFrame, text="*截至 (YYYY-MM-DD)\n不写默认今天:").grid(row=2, column=0, padx=10, pady=5)
+        Label(self.AddFrame, text="*截至 (YYYY-MM-DD)\n不写默认今天:", font=("宋体", 12)).grid(row=2, column=0, padx=10, pady=5)
         self.deadline_entry = Entry(self.AddFrame, width=20)
         self.deadline_entry.grid(row=2, column=1, padx=10, pady=5)
 
-        Label(self.AddFrame, text="*任务描述:").grid(row=3, column=0, padx=10, pady=5)
+        Label(self.AddFrame, text="*任务描述:", font=("宋体", 14)).grid(row=3, column=0, padx=10, pady=5)
         self.description_entry = tk.Text(self.AddFrame, width=40, height=5)
         self.description_entry.grid(row=3, column=1, padx=10, pady=5)
 
@@ -229,7 +229,6 @@ class TaskManagerApp(Frame): # 顺序图界面 也是编辑界面
             l["text"] = v
 
         def add_type_and_use(entry_value, l):
-            print(entry_value)
             if entry_value and entry_value not in self.used_types:
                 self.used_types.append(entry_value)
                 used_menu.add_command(label=entry_value, command=lambda v=entry_value: change_type(v, l))
