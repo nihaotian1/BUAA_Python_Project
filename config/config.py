@@ -11,4 +11,4 @@ def global_close():
     db.close_db(db.connect_db())
     print("Config: Closed database")
 
-version = 0.5
+version = 2.0
