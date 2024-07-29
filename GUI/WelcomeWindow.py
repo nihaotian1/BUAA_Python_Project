@@ -15,8 +15,6 @@ class RootWindow(tk.Frame): # 开始界面
         if app is None: # 第一次打开界面，需要初始化
             self.uid = uid
             self.nickname = nickname
-            if(self.uid == -1):
-                self.sign_in()
             self.root = root
             self.root.title("Welcome to Mission Planner" + str(self.nickname))
             self.root.geometry("1200x720+150+0")  # 扩大视图界面
@@ -146,10 +144,12 @@ class RootWindow(tk.Frame): # 开始界面
         req = Request(req_type=Command.SCHEDULE, uid=self.uid, date=datetime.now().date())
         tasks, times = handle(req)
         self.task_list.delete(0, END)
-        status_color = 'Aqua'
-        status_weight_str = '无权重'
         index = 0
         for mission in tasks:
+            if(mission.complete):
+                continue
+            status_color = 'Aqua'
+            status_weight_str = '无权重'
             if(mission.weight == 1):
                 status_color = 'DeepSkyBlue'
                 status_weight_str = '低权重'
@@ -246,7 +246,14 @@ class RootWindow(tk.Frame): # 开始界面
         self.content_area.destroy()
 
     def help_for_user(self):
-        pass
+        top = tk.Toplevel(self.root)
+        top.geometry("300x150+600+300")
+        top.title("帮助")
+        tk.Label(top, text="请查看项目报告\n或者邮件咨询管理员\n邮箱：2019578140@qq.com", font=("微软雅黑", 14)).pack()
+        button_frame = tk.Frame(top)
+        button_frame.pack(pady=10)
+
+        tk.Button(button_frame, text="确认", command=top.destroy).grid(row=0, column=1, padx=10, pady=10)
 
 
 def openWelcomeWindow(app=None,uid = None, nickname = None):
